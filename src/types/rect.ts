@@ -1,10 +1,6 @@
 import { Color } from '../config';
 import { Canvas } from './viewport';
-export type RectStyle = Partial<{
-    borderWidth: number,
-    borderColor: string,
-    background: string,
-}>;
+
 
 export enum RectType {
     CELL = 'cell',
@@ -27,24 +23,26 @@ export enum RectOption {
     'red' = 'red',
     'black' = 'black',
     'cell' = 'cell',
+    'button' = 'button',
 }
 
-export interface RectParam {
+export interface Param {
     name: string,
     type: RectType,
     option: RectOption,
     background?: Color,
     borderColor?: Color,
     borderWidth?: number,
+    board?: Canvas,
 }
 
-export class SRect {
+export class Rect {
     constructor(
         public readonly x: number,
         public readonly y: number,
         public readonly w: number,
         public readonly h: number,
-        public readonly param: RectParam
+        public readonly param: Param
     ) {
         this.x = x;
         this.y = y;
@@ -52,61 +50,59 @@ export class SRect {
         this.h = h;
         this.param = param;
     }
-}
-
-
-
-export class Rect {
-    // public name?: string;
-    public style?: RectStyle;
-    // public type?: RectType;
-    public constructor(
-        public readonly name: string,
-        public readonly type: RectType,
-        public readonly x: number,
-        public readonly y: number,
-        public readonly w: number,
-        public readonly h: number,
-    ) {
-        this.x = x;
-        this.y = y;
-        this.w = w;
-        this.h = h;
+    clone(withParam?: Partial<Param>):Rect {
+        const params: Param = Object.assign({}, this.param);
+        const keys = Object.keys(withParam)
+        // rewrite only styles at first, all @TODO
+        if (keys.includes('background')) {params.background = withParam.background;}
+        if (keys.includes('borderColor')) {params.borderColor = withParam.borderColor;}
+        if (keys.includes('borderWidth')) {params.borderWidth = withParam.borderWidth;}
+        return (new Rect(
+            this.x,
+            this.y,
+            this.w,
+            this.h,
+            params
+        ));
     }
-    setStyle(style:RectStyle) {
-        const keys = Object.keys(style);
-        if (!this.style) {this.style={};}
-        if (keys.includes('background')) {this.style.background = style.background;}
-        if (keys.includes('borderColor')) {this.style.borderColor = style.borderColor;}
-        if (keys.includes('borderWidth')) {this.style.borderWidth = style.borderWidth;}
-        return this;
+    private getBoard(onBoard:Canvas):Canvas {
+        const { board } = this.param;
+        if(onBoard) {
+            return onBoard;
+        }
+        if(board) {
+            return board;
+        }
+        throw new Error(`No active board on rect name: "${this.param.name}"`)
     }
-    clone():Rect {
-        const rect = new Rect(this.name, this.type, this.x,this.y,this.w,this.h);
-        rect.setStyle(this.style);
-        return rect;
-    }
-    drawRectOn(board: Canvas):Rect {
-        const { ctx } = board;
-        const { x, y, w, h, style } = this;
+    drawRect(onBoard?: Canvas):Rect {
+        const {
+            background,
+            borderColor,
+            borderWidth,
+        } = this.param;
+        const { ctx } = this.getBoard(onBoard);
+        const { x, y, w, h } = this;
+
         ctx.beginPath();
-        if(style && style.borderWidth && style.borderWidth > 0) {
-            ctx.strokeStyle = style.borderColor;
-            ctx.lineWidth = style.borderWidth;
+        if(borderWidth && borderWidth > 0) {
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = borderWidth;
             ctx.strokeRect(x, y, w, h);
             ctx.stroke();
         }
-        if(style.background) {
+        if(background) {
             ctx.rect(x, y, w, h);
-            ctx.fillStyle = style.background;
+            ctx.fillStyle = background;
             ctx.fill();
         }
         ctx.closePath();
         return this;
     }
-    drawTextOn(board: Canvas, fontSize:number = 36):Rect {
-        const { ctx } = board;
-        const x = this.x + this.w/2 - fontSize/3.3 * this.name.length;
+    drawText(onBoard?: Canvas, fontSize:number = 36):Rect {
+        const { ctx } = this.getBoard(onBoard);
+
+        const x = this.x + this.w/2 - fontSize/3.3 * this.param.name.length;
 
         // with descent
         // const y = this.y + this.h/2 + fontSize/3.9;
@@ -117,10 +113,15 @@ export class Rect {
         ctx.beginPath();
         ctx.font = `${fontSize}px Courier New`;
         ctx.fillStyle = 'white';
-        ctx.fillText(this.name, x, y);
+        ctx.fillText(this.param.name, x, y);
         ctx.closePath();
         ctx.fill();
         return this;
     }
-        
+    draw(onBoard?:Canvas):Rect {
+        const board = this.getBoard(onBoard);
+        this.drawRect(board);
+        this.drawText(board);
+        return this;
+    }
 }

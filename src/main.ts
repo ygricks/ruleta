@@ -1,4 +1,4 @@
-import { RectType, ViewPort, Rect } from "./types";
+import { RectType, ViewPort, Rect, RectOption } from "./types";
 import { Cells } from "./cells";
 import { Color } from './config';
 
@@ -12,8 +12,10 @@ const grid: { width: number, height: number } = { width: 76, height: 70 };
 const lineWidth: number = 2;
 //  cont
 const cont: {rect:Rect, value:number} = (function() {
-    const rect = new Rect('cont', RectType.CONT, start.x+grid.width*4.5, start.y+grid.height*6, grid.width*3, grid.height);
-    rect.setStyle({
+    const rect = new Rect(start.x+grid.width*4.5, start.y+grid.height*6, grid.width*3, grid.height, {
+        name: 'cont',
+        type: RectType.CONT,
+        option: RectOption.cell,
         borderWidth: lineWidth,
         borderColor: Color.FULLBLACK,
         background: Color.GREEN,
@@ -30,20 +32,20 @@ function drawCells(vp: ViewPort, ) {
         const c = Cells[i];
         
         const rect = (new Rect(
-                c.n.toString(),
-                RectType.CELL,
-                start.x + c.y * grid.width,
-                start.y + c.x * grid.height,
-                grid.width - lineWidth,
-                grid.height - lineWidth
-            ))
-            .setStyle({
+            start.x + c.y * grid.width,
+            start.y + c.x * grid.height,
+            grid.width - lineWidth,
+            grid.height - lineWidth,
+            {
+                name: c.n.toString(),
+                type: RectType.CELL,
+                board: board,
+                option: RectOption.cell,
                 borderWidth: lineWidth,
                 borderColor: Color.FULLBLACK,
                 background: c.color,
-            })
-            .drawRectOn(board)
-            .drawTextOn(board)
+            }))
+            .draw()
         ;
         zones.push(rect);
     }
@@ -53,35 +55,42 @@ function drawCells(vp: ViewPort, ) {
 function drawOptions(vp:ViewPort) {
     const { board } = vp;
 
-    type Cords = {x:number, y:number, w:number, h:number, b?:string, t?:RectType};
+    type Cords = {x:number, y:number, w:number, h:number, b?:Color, t?:RectType, o:RectOption};
     const options: {[key: string]: Cords} = {
-        '0': {x: 0, y: 0, w:grid.width, h:grid.height*3, b:Color.GREEN, t:RectType.CELL},
-        '1st12': {x: grid.width, y: grid.height*3, w:grid.width*4, h:50},
-        '2st12': {x: grid.width*5, y: grid.height*3, w:grid.width*4, h:50},
-        '3st12': {x: grid.width*9, y: grid.height*3, w:grid.width*4, h:50},
-        '1>18': {x: grid.width, y: grid.height*4-20, w:grid.width*6, h:50},
-        '19>36': {x: grid.width*7, y: grid.height*4-20, w:grid.width*6, h:50},
-        '1_line': {x: grid.width*13, y: 0, w:grid.width*2, h:grid.height},
-        '2_line': {x: grid.width*13, y: grid.height, w:grid.width*2, h:grid.height},
-        '3_line': {x: grid.width*13, y: grid.height*2, w:grid.width*2, h:grid.height},
-        'even': {x: grid.width, y: grid.height*4+30, w:grid.width*3, h:grid.height-20},
-        'odd': {x: grid.width*4, y: grid.height*4+30, w:grid.width*3, h:grid.height-20},
-        'red': {x: grid.width*7, y: grid.height*4+30, w:grid.width*3, h:grid.height-20, b:Color.RED},
-        'black': {x: grid.width*10, y: grid.height*4+30, w:grid.width*3, h:grid.height-20, b:Color.BLACK},
-        'ROLL': {x: grid.width, y: grid.height*6, w:grid.width*3, h:grid.height, b:Color.ORANGE, t:RectType.ROLL},
+        '0': {o:RectOption.cell, x: 0, y: 0, w:grid.width, h:grid.height*3, b:Color.GREEN, t:RectType.CELL},
+        '1st12': {o: RectOption["1st12"], x: grid.width, y: grid.height*3, w:grid.width*4, h:50},
+        '2st12': {o: RectOption["2st12"], x: grid.width*5, y: grid.height*3, w:grid.width*4, h:50},
+        '3st12': {o: RectOption["3st12"], x: grid.width*9, y: grid.height*3, w:grid.width*4, h:50},
+        '1>18': {o: RectOption["1>18"], x: grid.width, y: grid.height*4-20, w:grid.width*6, h:50},
+        '19>36': {o: RectOption["19>36"], x: grid.width*7, y: grid.height*4-20, w:grid.width*6, h:50},
+        '1_line': {o: RectOption["1_line"], x: grid.width*13, y: 0, w:grid.width*2, h:grid.height},
+        '2_line': {o: RectOption["2_line"], x: grid.width*13, y: grid.height, w:grid.width*2, h:grid.height},
+        '3_line': {o: RectOption["3_line"], x: grid.width*13, y: grid.height*2, w:grid.width*2, h:grid.height},
+        'even': {o: RectOption.even, x: grid.width, y: grid.height*4+30, w:grid.width*3, h:grid.height-20},
+        'odd': {o: RectOption.odd, x: grid.width*4, y: grid.height*4+30, w:grid.width*3, h:grid.height-20},
+        'red': {o: RectOption.red, x: grid.width*7, y: grid.height*4+30, w:grid.width*3, h:grid.height-20, b:Color.RED},
+        'black': {o: RectOption.black, x: grid.width*10, y: grid.height*4+30, w:grid.width*3, h:grid.height-20, b:Color.BLACK},
+        'ROLL': {o:RectOption.button, x: grid.width, y: grid.height*6, w:grid.width*3, h:grid.height, b:Color.ORANGE, t:RectType.ROLL},
     };
 
     for(const oName of Object.keys(options)) {
-        const { x, y, w, h, b, t } = options[oName];
-        const background = b != undefined ? b : Color.GREEN;
-        const rect = (new Rect(oName, !t ? RectType.OPTION : t, start.x+x, start.y+y, w, h))
-            .setStyle({
+        const { x, y, w, h, b, t, o } = options[oName];
+        const background: Color = b != undefined ? b : Color.GREEN;
+        const rect = (new Rect(
+            start.x+x,
+            start.y+y,
+            w,
+            h,
+            {
+                name: oName,
+                type: !t ? RectType.OPTION : t,
+                option: o,
+                board: board,
                 borderWidth: lineWidth,
-                borderColor: 'black',
+                borderColor: Color.FULLBLACK,
                 background: background,
-            })
-            .drawRectOn(board)
-            .drawTextOn(board);
+            }))
+            .draw();
         ;
         zones.push(rect);
     }
@@ -107,38 +116,54 @@ function drawBid(vp:ViewPort, bid:Bid) {
     ctx.closePath();
 
 
-    const irect = new Rect(bid.amount.toString(), RectType.CELL, x+w-radius, y+h-radius+1, radius*2, radius*2)
-        .drawTextOn(ui, 14)
+    const irect = new Rect(
+        x+w-radius,
+        y+h-radius+1,
+        radius*2,
+        radius*2,
+        {
+            name: bid.amount.toString(),
+            type: RectType.CELL,
+            option: RectOption.cell,
+        })
+        .drawText(ui, 14)
     ;
 };
 
-function ddrawBid(vp:ViewPort, bid:Bid) {
-    const { ui:{ctx},ui } = vp;
-    const { rect:{w,h},rect } = bid
+// function ddrawBid(vp:ViewPort, bid:Bid) {
+//     const { ui:{ctx},ui } = vp;
+//     const { rect:{w,h},rect } = bid
 
-    const radius = 20;
-    const bidMargin = 10;
-    const x = rect.x - bidMargin;
-    const y = rect.y - bidMargin;
-    ctx.beginPath();
-        ctx.fillStyle = Color.BID;
-        ctx.beginPath();
-        ctx.arc(x+w, y+h, radius, 0, 2 * Math.PI);
-        ctx.fill();
-    ctx.closePath();
+//     const radius = 20;
+//     const bidMargin = 10;
+//     const x = rect.x - bidMargin;
+//     const y = rect.y - bidMargin;
+//     ctx.beginPath();
+//         ctx.fillStyle = Color.BID;
+//         ctx.beginPath();
+//         ctx.arc(x+w, y+h, radius, 0, 2 * Math.PI);
+//         ctx.fill();
+//     ctx.closePath();
 
 
-    const irect = new Rect(bid.amount.toString(), RectType.CELL, x+w-radius, y+h-radius+1, radius*2, radius*2)
-        .drawTextOn(ui, 14)
-    ;
-};
+//     const irect = new Rect(bid.amount.toString(), RectType.CELL, x+w-radius, y+h-radius+1, radius*2, radius*2)
+//         .drawTextOn(ui, 14)
+//     ;
+// };
 
 function drawCont(vp:ViewPort) {
     const {rect:r} = cont;
     const {ui} = vp;
-    const rect = (new Rect(cont.value.toString(), r.type, r.x,r.y,r.w,r.h)).setStyle(r.style);
-    rect.drawRectOn(ui);
-    rect.drawTextOn(ui);
+    const rect = (new Rect(r.x,r.y,r.w,r.h,{
+        name: cont.value.toString(),
+        type: r.param.type,
+        option: RectOption.cell,
+        board: ui,
+        background: r.param.background,
+        borderColor: r.param.borderColor,
+        borderWidth: r.param.borderWidth,
+    }));
+    rect.draw();
 }
 
 function init() {
@@ -152,14 +177,14 @@ function init() {
     
     drawCont(vp);
     // faceBid
-    const rect = new Rect('0.5',RectType.OPTION, 600, 400, 50, 50);
-    ddrawBid(vp, {rect:rect, amount: 0.5});
+    // const rect = new Rect('0.5',RectType.OPTION, 600, 400, 50, 50);
+    // drawBid(vp, {rect:rect, amount: 0.5});
 
     const injectViewPort = function(event:PointerEvent) {
         return click(vp, event);
     };
 
-    ui.canvas.addEventListener("click", injectViewPort,);
+    ui.canvas.addEventListener("click", injectViewPort);
 
 
 
@@ -201,7 +226,7 @@ function click(vp:ViewPort, event:PointerEvent) {
             drawCont(vp);
         }
     }
-    switch(rect.type) {
+    switch(rect.param.type) {
         case RectType.ROLL:
             clear();
             Roll(vp);
@@ -217,7 +242,7 @@ function click(vp:ViewPort, event:PointerEvent) {
             break;
         };
         default: {
-            console.warn(`click on rectType: "${rect.type}" is not privided`);
+            console.warn(`click on type: "${rect.param.type}" & name: ${rect.param.name} is not privided`);
             break;
         }
     }
@@ -241,11 +266,10 @@ function getClickedRect(x:number, y:number):Rect|null {
 function Roll(vp:ViewPort) {
     const { ui } = vp;
     const ball: number = Math.floor(Math.random() * 37);
-    const originalRect: Rect = zones.find(e=>(e.type===RectType.CELL && e.name===ball.toString()));
+    const originalRect: Rect = zones.find(e=>(e.param.type===RectType.CELL && e.param.name===ball.toString()));
     originalRect
-        .clone()
-        .setStyle({borderColor:Color.YELLOW, background:null})
-        .drawRectOn(ui)
+        .clone({borderColor:Color.YELLOW, background:null})
+        .drawRect(ui)
     ;
     console.log(`BALL: ${ball}`);
     let income = 0;
@@ -258,7 +282,7 @@ function Roll(vp:ViewPort) {
                 const winnerBid:WinnerBid = {rect:bid.rect, amount:bid.amount, multiplier:multiplier, sum: bid.amount * multiplier};
                 winnerBids.push(winnerBid);
                 income += winnerBid.sum;
-                console.log(`order: ${bid.rect.name}, amount: ${bid.amount} * ${multiplier}, pureIncome: ${bid.amount * multiplier - bid.amount}`);
+                console.log(`order: ${bid.rect.param.name}, amount: ${bid.amount} * ${multiplier}, pureIncome: ${bid.amount * multiplier - bid.amount}`);
             }
         }
     }
@@ -301,7 +325,7 @@ interface WinnerBid {
 // let bids:Bid[] = [];
 let bids: {[key: string]: Bid} = {};
 function addBid(bid:Bid):Bid {
-    const key = `${bid.rect.name}.${bid.rect.x}.${bid.rect.y}`;
+    const key = `${bid.rect.param.name}.${bid.rect.x}.${bid.rect.y}`;
     const keys = Object.keys(bids);
     if (cont.value >= bid.amount) {
         cont.value -= bid.amount;
@@ -326,14 +350,14 @@ let winnerBids:WinnerBid[] = []
 
 function BidMultiplier(bid:Bid, ball:number):number {
     const ballString = ball.toString()
-    const { rect:{name:bidName} } =  bid;
+    const { rect:{ param:{name:bidName} } } =  bid;
 
-    const cell:Rect = zones.find(z=>z.name===ballString);
-    const {name:ballName} = cell;
+    const cell:Rect = zones.find(z=>z.param.name===ballString);
+    const {name:ballName} = cell.param;
 
     // console.log(`bidName: ${bidName} || ballName: ${ballName}`);
 
-    if(bid.rect.type === RectType.CELL) {
+    if(bid.rect.param.type === RectType.CELL) {
         if(bidName === ballName) {
             return 36;
         }else {
@@ -341,7 +365,7 @@ function BidMultiplier(bid:Bid, ball:number):number {
         }
     } 
 
-    switch(bid.rect.name) {
+    switch(bid.rect.param.name) {
         // case : {
         //     if(rect.name === cell.name) {
         //         return 36;
@@ -358,12 +382,12 @@ function BidMultiplier(bid:Bid, ball:number):number {
             }
         break;
         case 'red':
-            if(cell.style.background === Color.RED) {
+            if(cell.param.background === Color.RED) {
                 return 2;
             }
         break;
         case 'black':
-            if(cell.style.background === Color.BLACK) {
+            if(cell.param.background === Color.BLACK) {
                 return 2;
             }
         break;
@@ -409,7 +433,7 @@ function BidMultiplier(bid:Bid, ball:number):number {
         break;
 
         default:{
-            throw new Error(`Can't find option for bid name: "${bid.rect.name}" type: ${bid.rect.type}`);
+            throw new Error(`Can't find option for bid name: "${bid.rect.param.name}" type: ${bid.rect.param.type}`);
             break;
         };
     };
