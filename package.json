@@ -8,12 +8,12 @@
     "build": "webpack",
     "prettier:fix": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "prettier:watch": "onchange 'src/**/*.ts' -- prettier --write {{changed}}"
-
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "nodemon": "^3.0.1",
     "prettier": "^3.0.2",
     "ts-loader": "^9.4.4",
     "webpack": "^5.88.2",
