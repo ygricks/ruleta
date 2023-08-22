@@ -6,9 +6,8 @@ export enum Color {
     DARKGREEN = '#113600', // board background
     FULLBLACK = 'black',
     YELLOW = 'yellow',
-    BID = '#00aa00',
+    BID = '#00aa00'
 }
-
 
 // 0.5 = #6fc3ac
 // 1 = #5781b7

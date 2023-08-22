@@ -12,5 +12,5 @@ export enum RectOption {
     'red' = 'red',
     'black' = 'black',
     'cell' = 'cell',
-    'button' = 'button',
+    'button' = 'button'
 }

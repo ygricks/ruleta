@@ -1,14 +1,13 @@
-import { Color } from "./color";
-
+import { Color } from './color';
 
 interface Cell {
-    n:number;
-    x:number;
-    y:number;
+    n: number;
+    x: number;
+    y: number;
     color: Color;
-} 
+}
 
-export const Cells: {[key: number]: Cell} = {
+export const Cells: { [key: number]: Cell } = {
     0: { n: 0, x: 5, y: 5, color: Color.GREEN },
     1: { n: 1, x: 2, y: 1, color: Color.RED },
     2: { n: 2, x: 1, y: 1, color: Color.BLACK },
@@ -45,5 +44,5 @@ export const Cells: {[key: number]: Cell} = {
     33: { n: 33, x: 0, y: 11, color: Color.BLACK },
     34: { n: 34, x: 2, y: 12, color: Color.RED },
     35: { n: 35, x: 1, y: 12, color: Color.BLACK },
-    36: { n: 36, x: 0, y: 12, color: Color.RED },
+    36: { n: 36, x: 0, y: 12, color: Color.RED }
 };

@@ -5,12 +5,16 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --watch 'src/**' --ext 'ts,json' --exec 'npm run build'",
-    "build": "webpack"
+    "build": "webpack",
+    "prettier:fix": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "prettier:watch": "onchange 'src/**/*.ts' -- prettier --write {{changed}}"
+
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "prettier": "^3.0.2",
     "ts-loader": "^9.4.4",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"

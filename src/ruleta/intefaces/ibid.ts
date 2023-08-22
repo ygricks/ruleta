@@ -1,6 +1,6 @@
-import { Rect } from "../../rect";
+import { Rect } from '../../rect';
 
 export interface IBid {
-    rect: Rect,
-    amount: number,
+    rect: Rect;
+    amount: number;
 }

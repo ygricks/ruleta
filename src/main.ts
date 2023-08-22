@@ -1,6 +1,6 @@
-import { Ruleta } from "./ruleta";
+import { Ruleta } from './ruleta';
 
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     const ruleta = new Ruleta();
     ruleta.run();
 });

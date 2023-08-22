@@ -1,8 +1,8 @@
-import { Rect } from "../../rect";
+import { Rect } from '../../rect';
 
 export interface IWinnerBid {
-    rect: Rect,
-    amount: number,
-    multiplier: number,
-    sum: number,
+    rect: Rect;
+    amount: number;
+    multiplier: number;
+    sum: number;
 }

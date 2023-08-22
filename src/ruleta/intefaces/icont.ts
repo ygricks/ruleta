@@ -1,3 +1,6 @@
-import { Rect } from "../../rect";
+import { Rect } from '../../rect';
 
-export interface ICont{ rect:Rect, value:number };
+export interface ICont {
+    rect: Rect;
+    value: number;
+}
