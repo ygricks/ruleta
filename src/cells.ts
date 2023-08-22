@@ -1,4 +1,4 @@
-import { Color } from "./config";
+import { Color } from "./color";
 
 
 interface Cell {

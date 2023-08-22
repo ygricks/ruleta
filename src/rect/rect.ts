@@ -1,40 +1,5 @@
-import { Color } from '../config';
-import { Canvas } from './viewport';
-
-
-export enum RectType {
-    CELL = 'cell',
-    OPTION = 'option',
-    ROLL = 'roll',
-    CONT = 'cont',
-}
-
-export enum RectOption {
-    '1st12' = '1st12',
-    '2st12' = '2st12',
-    '3st12' = '3st12',
-    '1>18' = '1>18',
-    '19>36' = '19>36',
-    '1_line' = '1_line',
-    '2_line' = '2_line',
-    '3_line' = '3_line',
-    'even' = 'even',
-    'odd' = 'odd',
-    'red' = 'red',
-    'black' = 'black',
-    'cell' = 'cell',
-    'button' = 'button',
-}
-
-export interface Param {
-    name: string,
-    type: RectType,
-    option: RectOption,
-    background?: Color,
-    borderColor?: Color,
-    borderWidth?: number,
-    board?: Canvas,
-}
+import { IParam } from ".";
+import { ICanvas } from "../viewport";
 
 export class Rect {
     constructor(
@@ -42,7 +7,7 @@ export class Rect {
         public readonly y: number,
         public readonly w: number,
         public readonly h: number,
-        public readonly param: Param
+        public readonly param: IParam
     ) {
         this.x = x;
         this.y = y;
@@ -50,8 +15,8 @@ export class Rect {
         this.h = h;
         this.param = param;
     }
-    clone(withParam?: Partial<Param>):Rect {
-        const params: Param = Object.assign({}, this.param);
+    clone(withParam?: Partial<IParam>):Rect {
+        const params: IParam = Object.assign({}, this.param);
         const keys = Object.keys(withParam)
         // rewrite only styles at first, all @TODO
         if (keys.includes('background')) {params.background = withParam.background;}
@@ -65,7 +30,7 @@ export class Rect {
             params
         ));
     }
-    private getBoard(onBoard:Canvas):Canvas {
+    private getBoard(onBoard:ICanvas):ICanvas {
         const { board } = this.param;
         if(onBoard) {
             return onBoard;
@@ -75,7 +40,7 @@ export class Rect {
         }
         throw new Error(`No active board on rect name: "${this.param.name}"`)
     }
-    drawRect(onBoard?: Canvas):Rect {
+    drawRect(onBoard?: ICanvas):Rect {
         const {
             background,
             borderColor,
@@ -99,7 +64,7 @@ export class Rect {
         ctx.closePath();
         return this;
     }
-    drawText(onBoard?: Canvas, fontSize:number = 36):Rect {
+    drawText(onBoard?: ICanvas, fontSize:number = 36):Rect {
         const { ctx } = this.getBoard(onBoard);
 
         const x = this.x + this.w/2 - fontSize/3.3 * this.param.name.length;
@@ -118,7 +83,7 @@ export class Rect {
         ctx.fill();
         return this;
     }
-    draw(onBoard?:Canvas):Rect {
+    draw(onBoard?:ICanvas):Rect {
         const board = this.getBoard(onBoard);
         this.drawRect(board);
         this.drawText(board);
