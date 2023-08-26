@@ -1,4 +1,3 @@
-import { Cells } from '../cells';
 import { Color } from '../color';
 import { Rect, RectOption, RectType } from '../rect';
 import { ViewPort } from '../viewport';
@@ -58,26 +57,10 @@ export class Ruleta {
         ui.canvas.addEventListener('click', this.click.bind(this));
     }
 
-    drawCells() {
-        const { board } = this.vp;
-        const { start, grid, lineWidth } = this.config;
-        for (let i = 1; i <= 36; i++) {
-            const c = Cells[i];
-            const rect = new Rect(
-                start.x + c.y * grid.width,
-                start.y + c.x * grid.height,
-                grid.width - lineWidth,
-                grid.height - lineWidth,
-                {
-                    name: c.n.toString(),
-                    type: RectType.CELL,
-                    board: board,
-                    option: RectOption.cell,
-                    borderWidth: lineWidth,
-                    borderColor: Color.FULLBLACK,
-                    background: c.color
-                }
-            ).draw();
+    drawCells(): void {
+        for (let n = 0; n <= 36; n++) {
+            const rect = this.getNthRect(n);
+            rect.draw();
             this.zones.push(rect);
         }
     }
@@ -96,107 +79,98 @@ export class Ruleta {
             o: RectOption;
         };
         const options: { [key: string]: Cords } = {
-            '0': {
-                o: RectOption.cell,
-                x: 0,
-                y: 0,
-                w: grid.width,
-                h: grid.height * 3,
-                b: Color.GREEN,
-                t: RectType.CELL
-            },
             '1st12': {
                 o: RectOption['1st12'],
-                x: grid.width,
-                y: grid.height * 3,
-                w: grid.width * 4,
-                h: 50
+                x: 1,
+                y: 3,
+                w: 4,
+                h: 0.8
             },
             '2st12': {
                 o: RectOption['2st12'],
-                x: grid.width * 5,
-                y: grid.height * 3,
-                w: grid.width * 4,
-                h: 50
+                x: 5,
+                y: 3,
+                w: 4,
+                h: 0.8
             },
             '3st12': {
                 o: RectOption['3st12'],
-                x: grid.width * 9,
-                y: grid.height * 3,
-                w: grid.width * 4,
-                h: 50
+                x: 9,
+                y: 3,
+                w: 4,
+                h: 0.8
             },
             '1>18': {
                 o: RectOption['1>18'],
-                x: grid.width,
-                y: grid.height * 4 - 20,
-                w: grid.width * 6,
-                h: 50
+                x: 1,
+                y: 3.8,
+                w: 6,
+                h: 0.8
             },
             '19>36': {
                 o: RectOption['19>36'],
-                x: grid.width * 7,
-                y: grid.height * 4 - 20,
-                w: grid.width * 6,
-                h: 50
+                x: 7,
+                y: 3.8,
+                w: 6,
+                h: 0.8
             },
             '1_line': {
                 o: RectOption['1_line'],
-                x: grid.width * 13,
+                x: 13,
                 y: 0,
-                w: grid.width * 2,
-                h: grid.height
+                w: 2,
+                h: 1
             },
             '2_line': {
                 o: RectOption['2_line'],
-                x: grid.width * 13,
-                y: grid.height,
-                w: grid.width * 2,
-                h: grid.height
+                x: 13,
+                y: 1,
+                w: 2,
+                h: 1
             },
             '3_line': {
                 o: RectOption['3_line'],
-                x: grid.width * 13,
-                y: grid.height * 2,
-                w: grid.width * 2,
-                h: grid.height
+                x: 13,
+                y: 2,
+                w: 2,
+                h: 1
             },
             even: {
                 o: RectOption.even,
-                x: grid.width,
-                y: grid.height * 4 + 30,
-                w: grid.width * 3,
-                h: grid.height - 20
+                x: 1,
+                y: 4.6,
+                w: 3,
+                h: 0.8
             },
             odd: {
                 o: RectOption.odd,
-                x: grid.width * 4,
-                y: grid.height * 4 + 30,
-                w: grid.width * 3,
-                h: grid.height - 20
+                x: 4,
+                y: 4.6,
+                w: 3,
+                h: 0.8
             },
             red: {
                 o: RectOption.red,
-                x: grid.width * 7,
-                y: grid.height * 4 + 30,
-                w: grid.width * 3,
-                h: grid.height - 20,
+                x: 7,
+                y: 4.6,
+                w: 3,
+                h: 0.8,
                 b: Color.RED
             },
             black: {
                 o: RectOption.black,
-                x: grid.width * 10,
-                y: grid.height * 4 + 30,
-                w: grid.width * 3,
-                h: grid.height - 20,
+                x: 10,
+                y: 4.6,
+                w: 3,
+                h: 0.8,
                 b: Color.BLACK
             },
             ROLL: {
                 o: RectOption.button,
-                x: grid.width,
-                y: grid.height * 6,
-                w: grid.width * 3,
-                h: grid.height,
+                x: 1,
+                y: 6,
+                w: 3,
+                h: 1,
                 b: Color.ORANGE,
                 t: RectType.ROLL
             }
@@ -205,15 +179,21 @@ export class Ruleta {
         for (const oName of Object.keys(options)) {
             const { x, y, w, h, b, t, o } = options[oName];
             const background: Color = b != undefined ? b : Color.GREEN;
-            const rect = new Rect(start.x + x, start.y + y, w, h, {
-                name: oName,
-                type: !t ? RectType.OPTION : t,
-                option: o,
-                board: board,
-                borderWidth: lineWidth,
-                borderColor: Color.FULLBLACK,
-                background: background
-            }).draw();
+            const rect = new Rect(
+                start.x + x * grid.width,
+                start.y + y * grid.height,
+                w * grid.width - lineWidth,
+                h * grid.height - lineWidth,
+                {
+                    name: oName,
+                    type: !t ? RectType.OPTION : t,
+                    option: o,
+                    board: board,
+                    borderWidth: lineWidth,
+                    borderColor: Color.FULLBLACK,
+                    background: background
+                }
+            ).draw();
             this.zones.push(rect);
         }
     }
@@ -476,5 +456,43 @@ export class Ruleta {
                 option: RectOption.cell
             }
         ).drawText(ui, 14);
+    }
+
+    getNthRect(n: number): Rect {
+        const {
+            grid: { width, height },
+            start,
+            lineWidth
+        } = this.config;
+        const firstRed = n < 11 || (n > 18 && n < 29);
+        const even = n % 2 == 0;
+        const color =
+            n == 0
+                ? Color.GREEN
+                : firstRed
+                ? even
+                    ? Color.BLACK
+                    : Color.RED
+                : even
+                ? Color.RED
+                : Color.BLACK;
+        const x = Math.ceil(n / 3);
+        const y = n % 3 == 0 ? 0 : n % 3 == 2 ? 1 : 2;
+        const rect = new Rect(
+            x * width + start.x,
+            y * height + start.y,
+            width - lineWidth,
+            (n != 0 ? 1 : 3) * height - lineWidth,
+            {
+                name: n.toString(),
+                type: RectType.CELL,
+                option: RectOption.cell,
+                background: color,
+                board: this.vp.board,
+                borderColor: Color.FULLBLACK,
+                borderWidth: lineWidth
+            }
+        );
+        return rect;
     }
 }
