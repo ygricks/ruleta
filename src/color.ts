@@ -1,7 +1,7 @@
 export enum Color {
     GREEN = '#184702', // options cells & 0
-    RED = '#a40000', // red cells
-    BLACK = '#202020', // black cells
+    RED = '#850000', // red cells
+    BLACK = '#242424', // black cells
     ORANGE = '#a47300', // start button
     DARKGREEN = '#113600', // board background
     FULLBLACK = 'black',
