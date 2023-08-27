@@ -328,79 +328,75 @@ export class Ruleta {
                 return 0;
             }
         }
+        if (bid.rect.param.type == RectType.OPTION) {
+            switch (bid.rect.param.option) {
+                case RectOption.odd:
+                    if (ball !== 0 && ball % 2 === 1) {
+                        return 2;
+                    }
+                    break;
+                case RectOption.even:
+                    if (ball !== 0 && ball % 2 === 0) {
+                        return 2;
+                    }
+                    break;
+                case RectOption.red:
+                    if (cell.param.background === Color.RED) {
+                        return 2;
+                    }
+                    break;
+                case RectOption.black:
+                    if (cell.param.background === Color.BLACK) {
+                        return 2;
+                    }
+                    break;
+                case RectOption['1_line']:
+                    if (ball % 3 === 0) {
+                        return 3;
+                    }
+                    break;
+                case RectOption['2_line']:
+                    if (ball % 3 === 2) {
+                        return 3;
+                    }
+                    break;
+                case RectOption['3_line']:
+                    if (ball % 3 === 1) {
+                        return 3;
+                    }
+                    break;
+                case RectOption['1st12']:
+                    if (1 <= ball && ball <= 12) {
+                        return 3;
+                    }
+                    break;
+                case RectOption['2st12']:
+                    if (13 <= ball && ball <= 24) {
+                        return 3;
+                    }
+                    break;
+                case RectOption['3st12']:
+                    if (25 <= ball && ball <= 36) {
+                        return 3;
+                    }
+                    break;
+                case RectOption['1>18']:
+                    if (1 <= ball && ball <= 18) {
+                        return 2;
+                    }
+                    break;
+                case RectOption['19>36']:
+                    if (19 <= ball && ball <= 36) {
+                        return 2;
+                    }
+                    break;
 
-        switch (bid.rect.param.name) {
-            // case : {
-            //     if(rect.name === cell.name) {
-            //         return 36;
-            //     }
-            // };
-            case 'odd':
-                if (ball !== 0 && ball % 2 === 1) {
-                    return 2;
+                default: {
+                    throw new Error(
+                        `Can't find option for bid name: "${bid.rect.param.name}" type: ${bid.rect.param.type}`
+                    );
+                    break;
                 }
-                break;
-            case 'even':
-                if (ball !== 0 && ball % 2 === 0) {
-                    return 2;
-                }
-                break;
-            case 'red':
-                if (cell.param.background === Color.RED) {
-                    return 2;
-                }
-                break;
-            case 'black':
-                if (cell.param.background === Color.BLACK) {
-                    return 2;
-                }
-                break;
-            case '1_line':
-                if (ball % 3 === 0) {
-                    return 3;
-                }
-                break;
-            case '2_line':
-                if (ball % 3 === 2) {
-                    return 3;
-                }
-                break;
-            case '3_line':
-                if (ball % 3 === 1) {
-                    return 3;
-                }
-                break;
-            case '1st12':
-                if (1 <= ball && ball <= 12) {
-                    return 3;
-                }
-                break;
-            case '2st12':
-                if (13 <= ball && ball <= 24) {
-                    return 3;
-                }
-                break;
-            case '3st12':
-                if (25 <= ball && ball <= 36) {
-                    return 3;
-                }
-                break;
-            case '1>18':
-                if (1 <= ball && ball <= 18) {
-                    return 2;
-                }
-                break;
-            case '19>36':
-                if (19 <= ball && ball <= 36) {
-                    return 2;
-                }
-                break;
-
-            default: {
-                throw new Error(
-                    `Can't find option for bid name: "${bid.rect.param.name}" type: ${bid.rect.param.type}`
-                );
-                break;
             }
         }
         return 0;
