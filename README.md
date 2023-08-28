@@ -7,8 +7,12 @@ __dev mod__ - watch changes by nodemon, build on change
 npm run dev
 ```
 
-
 __for build__
 ```bash
 npm run build
+```
+
+__before commit__
+```bash
+npm run prettier:fix
 ```

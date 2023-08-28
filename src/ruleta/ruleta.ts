@@ -121,10 +121,6 @@ export class Ruleta {
                     this.drawCont();
                 }
                 break;
-                // console.warn(
-                //     `click on type: "${rect.param.type}" & name: ${rect.param.name} is not privided`
-                // );
-                // break;
             }
         }
     }
