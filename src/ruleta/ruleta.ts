@@ -1,8 +1,9 @@
 import { Color } from '../color';
-import { Rect, RectOption, RectType } from '../rect';
+import { Rect, RectOption } from '../rect';
 import { ViewPort } from '../viewport';
 import { RuletaConfig } from './config';
 import { IBid, IConfig, ICont, IWinnerBid } from './intefaces';
+import { Options } from './options';
 
 export class Ruleta {
     private readonly vp: ViewPort;
@@ -31,9 +32,8 @@ export class Ruleta {
             grid.width * 3,
             grid.height,
             {
-                name: 'cont',
-                type: RectType.CONT,
-                option: RectOption.cell,
+                name: 'CONT',
+                option: RectOption.CONT,
                 board: ui,
                 borderWidth: lineWidth,
                 borderColor: Color.FULLBLACK,
@@ -68,116 +68,8 @@ export class Ruleta {
     drawOptions() {
         const { board } = this.vp;
         const { start, grid, lineWidth } = this.config;
-
-        type Cords = {
-            x: number;
-            y: number;
-            w: number;
-            h: number;
-            b?: Color;
-            t?: RectType;
-            o: RectOption;
-        };
-        const options: { [key: string]: Cords } = {
-            '1st12': {
-                o: RectOption['1st12'],
-                x: 1,
-                y: 3,
-                w: 4,
-                h: 0.8
-            },
-            '2st12': {
-                o: RectOption['2st12'],
-                x: 5,
-                y: 3,
-                w: 4,
-                h: 0.8
-            },
-            '3st12': {
-                o: RectOption['3st12'],
-                x: 9,
-                y: 3,
-                w: 4,
-                h: 0.8
-            },
-            '1>18': {
-                o: RectOption['1>18'],
-                x: 1,
-                y: 3.8,
-                w: 6,
-                h: 0.8
-            },
-            '19>36': {
-                o: RectOption['19>36'],
-                x: 7,
-                y: 3.8,
-                w: 6,
-                h: 0.8
-            },
-            '1_line': {
-                o: RectOption['1_line'],
-                x: 13,
-                y: 0,
-                w: 2,
-                h: 1
-            },
-            '2_line': {
-                o: RectOption['2_line'],
-                x: 13,
-                y: 1,
-                w: 2,
-                h: 1
-            },
-            '3_line': {
-                o: RectOption['3_line'],
-                x: 13,
-                y: 2,
-                w: 2,
-                h: 1
-            },
-            even: {
-                o: RectOption.even,
-                x: 1,
-                y: 4.6,
-                w: 3,
-                h: 0.8
-            },
-            odd: {
-                o: RectOption.odd,
-                x: 4,
-                y: 4.6,
-                w: 3,
-                h: 0.8
-            },
-            red: {
-                o: RectOption.red,
-                x: 7,
-                y: 4.6,
-                w: 3,
-                h: 0.8,
-                b: Color.RED
-            },
-            black: {
-                o: RectOption.black,
-                x: 10,
-                y: 4.6,
-                w: 3,
-                h: 0.8,
-                b: Color.BLACK
-            },
-            ROLL: {
-                o: RectOption.button,
-                x: 1,
-                y: 6,
-                w: 3,
-                h: 1,
-                b: Color.ORANGE,
-                t: RectType.ROLL
-            }
-        };
-
-        for (const oName of Object.keys(options)) {
-            const { x, y, w, h, b, t, o } = options[oName];
+        for (const option of Options) {
+            const { n, x, y, w, h, b, o } = option;
             const background: Color = b != undefined ? b : Color.GREEN;
             const rect = new Rect(
                 start.x + x * grid.width,
@@ -185,8 +77,7 @@ export class Ruleta {
                 w * grid.width - lineWidth,
                 h * grid.height - lineWidth,
                 {
-                    name: oName,
-                    type: !t ? RectType.OPTION : t,
+                    name: n,
                     option: o,
                     board: board,
                     borderWidth: lineWidth,
@@ -213,13 +104,16 @@ export class Ruleta {
             }
             return;
         }
-        switch (rect.param.type) {
-            case RectType.ROLL:
+        switch (rect.param.option) {
+            case RectOption.ROLL:
                 this.clear();
                 this.roll();
                 break;
-            case RectType.CELL:
-            case RectType.OPTION: {
+            case RectOption.CONT:
+            case RectOption.BUTTON: {
+                break;
+            }
+            default: {
                 this.clear();
                 const bid: IBid = this.addBid({ rect: rect, amount: 100 });
                 if (bid) {
@@ -227,12 +121,10 @@ export class Ruleta {
                     this.drawCont();
                 }
                 break;
-            }
-            default: {
-                console.warn(
-                    `click on type: "${rect.param.type}" & name: ${rect.param.name} is not privided`
-                );
-                break;
+                // console.warn(
+                //     `click on type: "${rect.param.type}" & name: ${rect.param.name} is not privided`
+                // );
+                // break;
             }
         }
     }
@@ -264,7 +156,7 @@ export class Ruleta {
         const ball: number = Math.floor(Math.random() * 37);
         const originalRect: Rect = this.zones.find(
             (e) =>
-                e.param.type === RectType.CELL &&
+                e.param.option === RectOption.CELL &&
                 e.param.name === ball.toString()
         );
         originalRect
@@ -321,71 +213,70 @@ export class Ruleta {
 
         // console.log(`bidName: ${bidName} || ballName: ${ballName}`);
 
-        if (bid.rect.param.type === RectType.CELL) {
+        if (bid.rect.param.option === RectOption.CELL) {
             if (bidName === ballName) {
                 return 36;
             } else {
                 return 0;
             }
-        }
-        if (bid.rect.param.type == RectType.OPTION) {
+        } else {
             switch (bid.rect.param.option) {
-                case RectOption.odd:
+                case RectOption.ODD:
                     if (ball !== 0 && ball % 2 === 1) {
                         return 2;
                     }
                     break;
-                case RectOption.even:
+                case RectOption.EVEN:
                     if (ball !== 0 && ball % 2 === 0) {
                         return 2;
                     }
                     break;
-                case RectOption.red:
+                case RectOption.RED:
                     if (cell.param.background === Color.RED) {
                         return 2;
                     }
                     break;
-                case RectOption.black:
+                case RectOption.BLACK:
                     if (cell.param.background === Color.BLACK) {
                         return 2;
                     }
                     break;
-                case RectOption['1_line']:
+                case RectOption._1_LINE:
                     if (ball % 3 === 0) {
                         return 3;
                     }
                     break;
-                case RectOption['2_line']:
+                case RectOption._2_LINE:
                     if (ball % 3 === 2) {
                         return 3;
                     }
                     break;
-                case RectOption['3_line']:
+                case RectOption._3_LINE:
                     if (ball % 3 === 1) {
                         return 3;
                     }
                     break;
-                case RectOption['1st12']:
+                case RectOption._1ST12:
                     if (1 <= ball && ball <= 12) {
                         return 3;
                     }
                     break;
-                case RectOption['2st12']:
+                case RectOption._2ST12:
                     if (13 <= ball && ball <= 24) {
                         return 3;
                     }
                     break;
-                case RectOption['3st12']:
+                case RectOption._3ST12:
                     if (25 <= ball && ball <= 36) {
                         return 3;
                     }
                     break;
-                case RectOption['1>18']:
+                case RectOption._1TO18:
                     if (1 <= ball && ball <= 18) {
                         return 2;
                     }
                     break;
-                case RectOption['19>36']:
+                case RectOption._19TO36:
                     if (19 <= ball && ball <= 36) {
                         return 2;
                     }
@@ -393,9 +284,8 @@ export class Ruleta {
 
                 default: {
                     throw new Error(
-                        `Can't find option for bid name: "${bid.rect.param.name}" type: ${bid.rect.param.type}`
+                        `Can't find option for the bid: "${bid.rect.param.name}" option: ${bid.rect.param.option}`
                     );
-                    break;
                 }
             }
         }
@@ -448,8 +338,7 @@ export class Ruleta {
             radius * 2,
             {
                 name: bid.amount.toString(),
-                type: RectType.CELL,
-                option: RectOption.cell
+                option: RectOption.CELL
             }
         ).drawText(ui, 14);
     }
@@ -481,8 +370,7 @@ export class Ruleta {
             (n != 0 ? 1 : 3) * height - lineWidth,
             {
                 name: n.toString(),
-                type: RectType.CELL,
-                option: RectOption.cell,
+                option: RectOption.CELL,
                 background: color,
                 board: this.vp.board,
                 borderColor: Color.FULLBLACK,
