@@ -9,10 +9,12 @@ export enum Color {
     BID = '#00aa00'
 }
 
-// 0.5 = #6fc3ac
-// 1 = #5781b7
-// 5 = #40b93b
-// 25 = #b6332f
-// 100 = #1d0b0a
-// 500 = #49276c
-// 1k = #dbcf52
+export enum BidColor {
+    HALF = '#6fc3ac',
+    ONE = '#5781b7',
+    FIVE = '#40b93b',
+    TWENTYFILE = '#b6332f',
+    HUNDRED = '#1d0b0a',
+    FIVE_HUNDRED = '#49276c',
+    THOUSAND = '#dbcf52'
+}

@@ -1,12 +1,13 @@
 import { RectOption } from '.';
-import { Color } from '../color';
+import { BidColor, Color } from '../color';
 import { ICanvas } from '../viewport';
 
 export interface IParam {
     name: string;
     option: RectOption;
-    background?: Color;
-    borderColor?: Color;
+    background?: Color | BidColor;
+    borderColor?: Color | BidColor;
     borderWidth?: number;
     board?: ICanvas;
+    fontSize?: number;
 }

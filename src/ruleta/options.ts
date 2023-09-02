@@ -37,7 +37,7 @@ export const Options: Option[] = [
         h: 0.8
     },
     {
-        n: '1>18',
+        n: '1-18',
         o: RectOption._1TO18,
         x: 1,
         y: 3.8,
@@ -45,7 +45,7 @@ export const Options: Option[] = [
         h: 0.8
     },
     {
-        n: '19>36',
+        n: '19-36',
         o: RectOption._19TO36,
         x: 7,
         y: 3.8,
@@ -53,7 +53,7 @@ export const Options: Option[] = [
         h: 0.8
     },
     {
-        n: '1_line',
+        n: '2to1',
         o: RectOption._1_LINE,
         x: 13,
         y: 0,
@@ -61,7 +61,7 @@ export const Options: Option[] = [
         h: 1
     },
     {
-        n: '2_line',
+        n: '2to1',
         o: RectOption._2_LINE,
         x: 13,
         y: 1,
@@ -69,7 +69,7 @@ export const Options: Option[] = [
         h: 1
     },
     {
-        n: '3_line',
+        n: '2to1',
         o: RectOption._3_LINE,
         x: 13,
         y: 2,
@@ -77,7 +77,7 @@ export const Options: Option[] = [
         h: 1
     },
     {
-        n: 'even',
+        n: 'Even',
         o: RectOption.EVEN,
         x: 1,
         y: 4.6,
@@ -85,7 +85,7 @@ export const Options: Option[] = [
         h: 0.8
     },
     {
-        n: 'odd',
+        n: 'Odd',
         o: RectOption.ODD,
         x: 4,
         y: 4.6,
@@ -93,7 +93,7 @@ export const Options: Option[] = [
         h: 0.8
     },
     {
-        n: 'red',
+        n: 'Red',
         o: RectOption.RED,
         x: 7,
         y: 4.6,
@@ -102,7 +102,7 @@ export const Options: Option[] = [
         b: Color.RED
     },
     {
-        n: 'black',
+        n: 'Black',
         o: RectOption.BLACK,
         x: 10,
         y: 4.6,

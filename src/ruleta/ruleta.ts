@@ -1,4 +1,4 @@
-import { Color } from '../color';
+import { Color, BidColor } from '../color';
 import { Rect, RectOption } from '../rect';
 import { ViewPort } from '../viewport';
 import { RuletaConfig } from './config';
@@ -52,9 +52,47 @@ export class Ruleta {
         ctx.fillRect(0, 0, this.vp.size.width, this.vp.size.height);
         this.drawCells();
         this.drawOptions();
+        this.drawBidsAmount();
         this.vp.copy();
         this.drawCont();
         ui.canvas.addEventListener('click', this.click.bind(this));
+    }
+
+    drawBidsAmount() {
+        const {
+            board: { ctx },
+            board
+        } = this.vp;
+        const amounts: { x: number; y: number; c: BidColor; n: string }[] = [
+            { x: 700, y: 480, n: '0.5', c: BidColor.HALF },
+            { x: 760, y: 480, n: '1', c: BidColor.ONE },
+            { x: 820, y: 480, n: '5', c: BidColor.FIVE },
+            { x: 880, y: 480, n: '25', c: BidColor.TWENTYFILE },
+            { x: 940, y: 480, n: '100', c: BidColor.HUNDRED },
+            { x: 1000, y: 480, n: '500', c: BidColor.FIVE_HUNDRED },
+            { x: 1060, y: 480, n: '1k', c: BidColor.THOUSAND }
+        ];
+        for (const amount of amounts) {
+            const { x, y, c, n } = amount;
+            const rect = new Rect(
+                x,
+                y,
+                this.config.grid.width,
+                this.config.grid.height,
+                {
+                    name: n,
+                    option: RectOption.BID_AMOUNT,
+                    background: c,
+                    board: board,
+                    fontSize: 24
+                }
+            ).draw();
+            // ctx.beginPath();
+            // ctx.arc(x, y, 25, 0, 2 * Math.PI);
+            // ctx.fillStyle = c;
+            // ctx.stroke();
+            // ctx.fill();
+        }
     }
 
     drawCells(): void {
@@ -334,9 +372,10 @@ export class Ruleta {
             radius * 2,
             {
                 name: bid.amount.toString(),
-                option: RectOption.CELL
+                option: RectOption.CELL,
+                fontSize: 14
             }
-        ).drawText(ui, 14);
+        ).drawText(ui);
     }
 
     getNthRect(n: number): Rect {

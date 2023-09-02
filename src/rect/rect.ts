@@ -60,9 +60,12 @@ export class Rect {
         ctx.closePath();
         return this;
     }
-    drawText(onBoard?: ICanvas, fontSize: number = 36): Rect {
+    drawText(onBoard?: ICanvas): Rect {
         const { ctx } = this.getBoard(onBoard);
-
+        let { fontSize } = this.param;
+        if (!fontSize) {
+            fontSize = 36;
+        }
         const x =
             this.x + this.w / 2 - (fontSize / 3.3) * this.param.name.length;
 

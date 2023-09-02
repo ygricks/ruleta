@@ -11,7 +11,8 @@ export enum RectOptionBid {
     ODD = 'odd',
     RED = 'red',
     BLACK = 'black',
-    CELL = 'cell'
+    CELL = 'cell',
+    BID_AMOUNT = 'bid_amount'
 }
 
 export enum RectOptionOther {
