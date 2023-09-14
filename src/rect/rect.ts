@@ -1,4 +1,5 @@
 import { IParam } from '.';
+import { Text } from '../figure';
 import { ICanvas } from '../viewport';
 
 export class Rect {
@@ -8,13 +9,7 @@ export class Rect {
         public readonly w: number,
         public readonly h: number,
         public readonly param: IParam
-    ) {
-        this.x = x;
-        this.y = y;
-        this.w = w;
-        this.h = h;
-        this.param = param;
-    }
+    ) {}
     clone(withParam?: Partial<IParam>): Rect {
         const params: IParam = Object.assign({}, this.param);
         const keys = Object.keys(withParam);
@@ -60,27 +55,40 @@ export class Rect {
         ctx.closePath();
         return this;
     }
+    public static drawTextOn(
+        onBoard: ICanvas,
+        fx: number,
+        fy: number,
+        fw: number,
+        fh: number,
+        text: Text
+    ): void {
+        const { ctx } = onBoard;
+        const x = fx + fw / 2 - (text.size / 3.3) * text.text.length;
+
+        // with descent
+        // const y = this.fy + this.h/2 + text.size/3.9;
+
+        // without descent
+        const y = fy + fh / 2 + text.size / 3;
+
+        ctx.beginPath();
+        ctx.font = `${text.size}px Courier New`;
+        ctx.fillStyle = 'white';
+        ctx.fillText(text.text, x, y);
+        ctx.closePath();
+        ctx.fill();
+    }
     drawText(onBoard?: ICanvas): Rect {
-        const { ctx } = this.getBoard(onBoard);
         let { fontSize } = this.param;
         if (!fontSize) {
             fontSize = 36;
         }
-        const x =
-            this.x + this.w / 2 - (fontSize / 3.3) * this.param.name.length;
-
-        // with descent
-        // const y = this.y + this.h/2 + fontSize/3.9;
-
-        // without descent
-        const y = this.y + this.h / 2 + fontSize / 3;
-
-        ctx.beginPath();
-        ctx.font = `${fontSize}px Courier New`;
-        ctx.fillStyle = 'white';
-        ctx.fillText(this.param.name, x, y);
-        ctx.closePath();
-        ctx.fill();
+        const board = this.getBoard(onBoard);
+        Rect.drawTextOn(board, this.x, this.y, this.w, this.h, {
+            text: this.param.name,
+            size: fontSize
+        });
         return this;
     }
     draw(onBoard?: ICanvas): Rect {

@@ -1,6 +1,6 @@
-import { Rect } from '../../rect';
+// import { FigureProfile } from '../../figure';
 
 export interface ICont {
-    rect: Rect;
+    // shape: FigureProfile;
     value: number;
 }

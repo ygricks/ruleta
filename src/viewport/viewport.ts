@@ -3,31 +3,43 @@ import { ICanvas, ISize } from './interfaces';
 export class ViewPort {
     public readonly board: ICanvas;
     public readonly ui: ICanvas;
+    public readonly out: ICanvas;
     public readonly size: ISize;
     constructor() {
         const body = document.querySelector('body');
+        let out = 4; // remove on full screen
         this.size = {
-            width: body.offsetWidth - 4,
-            height: body.offsetHeight - 4
+            width: body.offsetWidth - out,
+            height: body.offsetHeight - out
         };
         this.board = this.newCanvas('board');
         this.ui = this.newCanvas('ui');
-        body.appendChild(this.ui.canvas);
+        this.out = this.newCanvas('out');
+
+        body.appendChild(this.out.canvas);
     }
     newCanvas(id: string): ICanvas {
         const canvas = document.createElement('canvas');
-        canvas.width = this.size.width;
-        canvas.height = this.size.height;
+        const { width, height } = this.size;
+        canvas.width = width;
+        canvas.height = height;
         canvas.setAttribute('id', id);
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, this.size.width, this.size.height);
-        return { canvas, ctx };
+        const clear = (function (ctx, w, h) {
+            return function () {
+                ctx.clearRect(0, 0, w, h);
+            };
+        })(ctx, width, height);
+        return { canvas, ctx, clear };
     }
-    copy() {
+    view() {
+        this.out.clear();
         const {
-            board: { canvas: source },
-            ui: { ctx }
+            board: { canvas: source1 },
+            ui: { canvas: source2 },
+            out: { ctx }
         } = this;
-        ctx.drawImage(source, 0, 0, this.size.width, this.size.height);
+        ctx.drawImage(source1, 0, 0, this.size.width, this.size.height);
+        ctx.drawImage(source2, 0, 0, this.size.width, this.size.height);
     }
 }

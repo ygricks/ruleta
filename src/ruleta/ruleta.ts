@@ -1,363 +1,337 @@
 import { Color, BidColor } from '../color';
-import { Rect, RectOption } from '../rect';
+import {
+    Figure,
+    FigureCell,
+    FigureOption,
+    FigureSpecial,
+    FigureText,
+    HorizontalProfile,
+    Profile,
+    FigureKeys,
+    GetFigureByKey,
+    GetFigureByValue,
+    GetColor
+} from '../figure';
+import { Rect } from '../rect';
 import { ViewPort } from '../viewport';
 import { RuletaConfig } from './config';
-import { IBid, IConfig, ICont, IWinnerBid } from './intefaces';
-import { Options } from './options';
+import { IConfig, ICont, IWinnerBid } from './intefaces';
 
 export class Ruleta {
     private readonly vp: ViewPort;
     private readonly config: IConfig;
     private cont: ICont;
-    private zones: Rect[] = [];
-    private redraw: boolean;
-    private bids: { [key: string]: IBid } = {};
+    private zones: Partial<{ [key in Figure]: Rect }> = {};
+    private nextClickRedraw: boolean;
+    private bids: Partial<{ [key in Figure]: number }> = {};
     private winnerBids: IWinnerBid[] = [];
+    private profile: Profile;
     constructor() {
         this.vp = new ViewPort();
         this.config = RuletaConfig;
+
+        // @TODO choise profile || autodetect
+        this.profile = HorizontalProfile;
     }
 
     run() {
-        this.cont = this.makeCont();
+        this.cont = { value: 10000 };
         this.drawBoard();
-    }
-
-    makeCont(): ICont {
-        const { start, grid, lineWidth } = this.config;
-        const { ui } = this.vp;
-        const rect = new Rect(
-            start.x + grid.width * 4.5,
-            start.y + grid.height * 6,
-            grid.width * 3,
-            grid.height,
-            {
-                name: 'CONT',
-                option: RectOption.CONT,
-                board: ui,
-                borderWidth: lineWidth,
-                borderColor: Color.FULLBLACK,
-                background: Color.GREEN
-            }
-        );
-        return { rect: rect, value: 10000 };
+        this.vp.view();
     }
 
     drawBoard() {
         const {
-            board: { ctx },
-            ui
-        } = this.vp;
+            vp: {
+                board: { ctx },
+                size: { width, height },
+                out
+            }
+        } = this;
         ctx.fillStyle = Color.DARKGREEN;
-        ctx.fillRect(0, 0, this.vp.size.width, this.vp.size.height);
-        this.drawCells();
-        this.drawOptions();
-        this.drawBidsAmount();
-        this.vp.copy();
+        ctx.fillRect(0, 0, width, height);
+        this.drawFigures();
+        // this.drawBidsAmount();
         this.drawCont();
-        ui.canvas.addEventListener('click', this.click.bind(this));
+        out.canvas.addEventListener('click', this.click.bind(this));
     }
 
-    drawBidsAmount() {
-        const {
-            board: { ctx },
-            board
-        } = this.vp;
-        const amounts: { x: number; y: number; c: BidColor; n: string }[] = [
-            { x: 700, y: 480, n: '0.5', c: BidColor.HALF },
-            { x: 760, y: 480, n: '1', c: BidColor.ONE },
-            { x: 820, y: 480, n: '5', c: BidColor.FIVE },
-            { x: 880, y: 480, n: '25', c: BidColor.TWENTYFILE },
-            { x: 940, y: 480, n: '100', c: BidColor.HUNDRED },
-            { x: 1000, y: 480, n: '500', c: BidColor.FIVE_HUNDRED },
-            { x: 1060, y: 480, n: '1k', c: BidColor.THOUSAND }
-        ];
-        for (const amount of amounts) {
-            const { x, y, c, n } = amount;
-            const rect = new Rect(
-                x,
-                y,
-                this.config.grid.width,
-                this.config.grid.height,
-                {
-                    name: n,
-                    option: RectOption.BID_AMOUNT,
-                    background: c,
-                    board: board,
-                    fontSize: 24
-                }
-            ).draw();
-            // ctx.beginPath();
-            // ctx.arc(x, y, 25, 0, 2 * Math.PI);
-            // ctx.fillStyle = c;
-            // ctx.stroke();
-            // ctx.fill();
-        }
-    }
+    // drawBidsAmount() {
+    //     const {
+    //         board: { ctx },
+    //         board
+    //     } = this.vp;
+    //     const amounts: { x: number; y: number; c: BidColor; n: string }[] = [
+    //         { x: 700, y: 480, n: '0.5', c: BidColor.HALF },
+    //         { x: 760, y: 480, n: '1', c: BidColor.ONE },
+    //         { x: 820, y: 480, n: '5', c: BidColor.FIVE },
+    //         { x: 880, y: 480, n: '25', c: BidColor.TWENTYFILE },
+    //         { x: 940, y: 480, n: '100', c: BidColor.HUNDRED },
+    //         { x: 1000, y: 480, n: '500', c: BidColor.FIVE_HUNDRED },
+    //         { x: 1060, y: 480, n: '1k', c: BidColor.THOUSAND }
+    //     ];
+    //     for (const amount of amounts) {
+    //         const { x, y, c, n } = amount;
+    //         const rect = new Rect(
+    //             x,
+    //             y,
+    //             this.config.grid.width,
+    //             this.config.grid.height,
+    //             {
+    //                 name: n,
+    //                 // option: RectOption.BID_AMOUNT,
+    //                 background: c,
+    //                 board: board,
+    //                 fontSize: 24
+    //             }
+    //         ).draw();
+    //         // ctx.beginPath();
+    //         // ctx.arc(x, y, 25, 0, 2 * Math.PI);
+    //         // ctx.fillStyle = c;
+    //         // ctx.stroke();
+    //         // ctx.fill();
+    //     }
+    // }
 
-    drawCells(): void {
-        for (let n = 0; n <= 36; n++) {
-            const rect = this.getNthRect(n);
+    drawFigures(): void {
+        const tipicStyle = {
+            board: this.vp.board,
+            borderColor: Color.FULLBLACK,
+            borderWidth: this.config.lineWidth
+        };
+
+        for (const key in Figure) {
+            const figure = GetFigureByKey(key);
+            const style = {
+                ...tipicStyle,
+                background: GetColor(figure),
+                name: FigureText[figure].text,
+                fontSize: FigureText[figure].size
+            };
+            const p = this.profile[figure];
+            const rect = new Rect(p.x, p.y, p.w, p.h, style);
+            this.zones[figure] = rect;
             rect.draw();
-            this.zones.push(rect);
-        }
-    }
-
-    drawOptions() {
-        const { board } = this.vp;
-        const { start, grid, lineWidth } = this.config;
-        for (const option of Options) {
-            const { n, x, y, w, h, b, o } = option;
-            const background: Color = b != undefined ? b : Color.GREEN;
-            const rect = new Rect(
-                start.x + x * grid.width,
-                start.y + y * grid.height,
-                w * grid.width - lineWidth,
-                h * grid.height - lineWidth,
-                {
-                    name: n,
-                    option: o,
-                    board: board,
-                    borderWidth: lineWidth,
-                    borderColor: Color.FULLBLACK,
-                    background: background
-                }
-            ).draw();
-            this.zones.push(rect);
         }
     }
 
     drawCont() {
-        this.cont.rect.param.name = this.cont.value.toString();
-        this.cont.rect.draw();
+        const {
+            vp: { ui },
+            vp
+        } = this;
+        const { x, y, w, h } = this.profile[Figure.CONT];
+        const { size } = FigureText[Figure.CONT];
+        ui.ctx.clearRect(x, y, w, h);
+        Rect.drawTextOn(ui, x, y, w, h, {
+            text: this.cont.value.toString(),
+            size
+        });
     }
 
     click(event: PointerEvent) {
         const { clientX: x, clientY: y } = event;
-        const rect: Rect | null = this.getClickedRect(x, y);
-        if (rect === null) {
+        const figure: Figure | null = this.getClickedFigure(x, y);
+        if (this.nextClickRedraw) {
+            this.nextClickRedraw = false;
+            this.vp.ui.clear();
+        }
+        if (figure === null) {
             if (!Object.keys(this.bids).length) {
-                this.vp.copy();
                 this.drawCont();
+                this.vp.view();
             }
             return;
         }
-        switch (rect.param.option) {
-            case RectOption.ROLL:
-                this.clear();
+
+        const bidAmount = 100; // @TODO chenge by selected amount
+
+        if (FigureCell.hasOwnProperty(FigureKeys[figure])) {
+            this.addBid(figure, bidAmount);
+        } else if (FigureOption.hasOwnProperty(FigureKeys[figure])) {
+            this.addBid(figure, bidAmount);
+        } else if (FigureSpecial.hasOwnProperty(FigureKeys[figure])) {
+            if (figure === Figure.ROLL) {
                 this.roll();
-                break;
-            case RectOption.CONT:
-            case RectOption.BUTTON: {
-                break;
+                return;
             }
-            default: {
-                this.clear();
-                const bid: IBid = this.addBid({ rect: rect, amount: 100 });
-                if (bid) {
-                    this.drawBid(bid);
-                    this.drawCont();
-                }
-                break;
-            }
+        } else {
+            console.error(new Error(`imposible click ${figure}`));
         }
+        this.vp.view();
     }
 
-    clear() {
-        if (this.redraw) {
-            this.redraw = false;
-            this.vp.copy();
-            this.drawCont();
-        }
-    }
-
-    getClickedRect(x: number, y: number): Rect | null {
-        for (const rect of this.zones) {
+    getClickedFigure(x: number, y: number): Figure | null {
+        for (const key in Figure) {
+            const figure = GetFigureByKey(key);
+            const rect = this.zones[figure];
             if (
                 rect.x < x &&
                 x < rect.x + rect.w &&
                 rect.y < y &&
                 y < rect.y + rect.h
             ) {
-                return rect;
+                return figure;
             }
         }
         return null;
     }
 
     roll() {
-        const { ui } = this.vp;
+        const {
+            vp: { ui },
+            vp
+        } = this;
         const ball: number = Math.floor(Math.random() * 37);
-        const originalRect: Rect = this.zones.find(
-            (e) =>
-                e.param.option === RectOption.CELL &&
-                e.param.name === ball.toString()
-        );
+        const figure: Figure = GetFigureByValue(ball.toString());
+        if (!figure) {
+            console.error(new Error(`figure was not found ${ball}`));
+            return;
+        }
+        const originalRect: Rect = this.zones[figure];
         originalRect
             .clone({ borderColor: Color.YELLOW, background: null })
             .drawRect(ui);
-        console.log(`BALL: ${ball}`);
         let income = 0;
         let outcome = 0;
         if (Object.keys(this.bids).length) {
-            for (const bid of Object.values(this.bids)) {
-                outcome += bid.amount;
-                const multiplier = this.bidMultiplier(bid, ball);
+            for (const bid in this.bids) {
+                const bidFigure: Figure = GetFigureByValue(bid);
+                const amount: number = this.bids[bidFigure];
+                const rect: Rect = this.zones[bidFigure];
+                outcome += amount;
+                const multiplier = this.bidMultiplier(bidFigure, figure);
                 if (multiplier) {
                     const winnerBid: IWinnerBid = {
-                        rect: bid.rect,
-                        amount: bid.amount,
+                        rect: rect,
+                        amount: amount,
                         multiplier: multiplier,
-                        sum: bid.amount * multiplier
+                        sum: amount * multiplier
                     };
                     this.winnerBids.push(winnerBid);
                     income += winnerBid.sum;
                     console.log(
-                        `order: ${bid.rect.param.name}, amount: ${
-                            bid.amount
-                        } * ${multiplier}, pureIncome: ${
-                            bid.amount * multiplier - bid.amount
+                        `    + order: ${
+                            rect.param.name
+                        }, amount: ${amount} * ${multiplier}, pureIncome: ${
+                            amount * multiplier - amount
                         }`
                     );
                 }
             }
         }
         console.log(
-            `WIN: ${income}, SPEND: ${outcome}, step: ${income - outcome}`
+            `WIN: ${income} | OUT: ${outcome}, IN: ${income - outcome}`
         );
         this.cont.value += income;
         this.drawCont();
-        // clear bids
         this.bids = {};
         this.winnerBids = [];
-        // clear drawer
-        this.redraw = true;
+        vp.view();
+        this.nextClickRedraw = true;
     }
 
-    bidMultiplier(bid: IBid, ball: number): number {
-        const ballString = ball.toString();
-        const {
-            rect: {
-                param: { name: bidName }
-            }
-        } = bid;
-
-        const cell: Rect = this.zones.find((z) => z.param.name === ballString);
-        const { name: ballName } = cell.param;
-
-        // console.log(`bidName: ${bidName} || ballName: ${ballName}`);
-
-        if (bid.rect.param.option === RectOption.CELL) {
-            if (bidName === ballName) {
+    bidMultiplier(bidFigure: Figure, ballFigure: Figure): number {
+        if (FigureCell.hasOwnProperty(FigureKeys[bidFigure])) {
+            if (bidFigure === ballFigure) {
                 return 36;
-            } else {
-                return 0;
             }
-        } else {
-            switch (bid.rect.param.option) {
-                case RectOption.ODD:
-                    if (ball !== 0 && ball % 2 === 1) {
-                        return 2;
-                    }
-                    break;
-                case RectOption.EVEN:
-                    if (ball !== 0 && ball % 2 === 0) {
-                        return 2;
-                    }
-                    break;
-                case RectOption.RED:
-                    if (cell.param.background === Color.RED) {
-                        return 2;
-                    }
-                    break;
-                case RectOption.BLACK:
-                    if (cell.param.background === Color.BLACK) {
-                        return 2;
-                    }
-                    break;
-                case RectOption._1_LINE:
-                    if (ball % 3 === 0) {
-                        return 3;
-                    }
-                    break;
-                case RectOption._2_LINE:
-                    if (ball % 3 === 2) {
-                        return 3;
-                    }
-                    break;
-                case RectOption._3_LINE:
-                    if (ball % 3 === 1) {
-                        return 3;
-                    }
-                    break;
-                case RectOption._1ST12:
+        } else if (FigureOption.hasOwnProperty(FigureKeys[bidFigure])) {
+            const ball: number = parseInt(ballFigure);
+            switch (bidFigure) {
+                case FigureOption._1ST12:
                     if (1 <= ball && ball <= 12) {
                         return 3;
                     }
                     break;
-                case RectOption._2ST12:
+                case FigureOption._2ND12:
                     if (13 <= ball && ball <= 24) {
                         return 3;
                     }
                     break;
-                case RectOption._3ST12:
+                case FigureOption._3RD12:
                     if (25 <= ball && ball <= 36) {
                         return 3;
                     }
                     break;
-                case RectOption._1TO18:
+                case FigureOption._1TO18:
                     if (1 <= ball && ball <= 18) {
                         return 2;
                     }
                     break;
-                case RectOption._19TO36:
+                case FigureOption._19TO36:
                     if (19 <= ball && ball <= 36) {
                         return 2;
                     }
                     break;
-
-                default: {
-                    throw new Error(
-                        `Can't find option for the bid: "${bid.rect.param.name}" option: ${bid.rect.param.option}`
-                    );
-                }
+                case FigureOption._1_LINE:
+                    if (ball % 3 === 0) {
+                        return 3;
+                    }
+                    break;
+                case FigureOption._2_LINE:
+                    if (ball % 3 === 2) {
+                        return 3;
+                    }
+                    break;
+                case FigureOption._3_LINE:
+                    if (ball % 3 === 1) {
+                        return 3;
+                    }
+                case FigureOption.EVEN:
+                    if (ball !== 0 && ball % 2 === 0) {
+                        return 2;
+                    }
+                    break;
+                case FigureOption.ODD:
+                    if (ball !== 0 && ball % 2 === 1) {
+                        return 2;
+                    }
+                    break;
+                case FigureOption.RED:
+                    if (GetColor(ballFigure) === Color.RED) {
+                        return 2;
+                    }
+                    break;
+                case FigureOption.BLACK:
+                    if (GetColor(ballFigure) === Color.BLACK) {
+                        return 2;
+                    }
+                    break;
             }
         }
         return 0;
     }
 
-    addBid(bid: IBid): IBid {
-        const key = `${bid.rect.param.name}.${bid.rect.x}.${bid.rect.y}`;
-        const keys = Object.keys(this.bids);
-        if (this.cont.value >= bid.amount) {
-            this.cont.value -= bid.amount;
+    addBid(figure: Figure, amount: number): void {
+        if (this.cont.value >= amount) {
+            this.cont.value -= amount;
         } else {
             return null;
         }
-        if (keys.includes(key)) {
-            bid.amount += this.bids[key].amount;
-            this.bids[key] = bid;
+        if (this.bids[figure]) {
+            this.bids[figure] += amount;
         } else {
-            this.bids[key] = bid;
+            this.bids[figure] = amount;
         }
-
-        return bid;
+        this.drawBid(figure);
+        this.drawCont();
     }
 
-    drawBid(bid: IBid) {
+    drawBid(figure: Figure) {
         const {
             ui: { ctx },
             ui
         } = this.vp;
-        const {
-            rect: { w, h },
-            rect
-        } = bid;
+
+        const rect = this.zones[figure];
+        const amount = this.bids[figure];
+        let { x, y, w, h } = rect;
 
         const radius = 18;
         const bidMargin = 10;
-        const x = rect.x - bidMargin;
-        const y = rect.y - bidMargin;
+        x = x - bidMargin;
+        y = y - bidMargin;
         ctx.beginPath();
         ctx.fillStyle = Color.BID;
         ctx.beginPath();
@@ -371,47 +345,9 @@ export class Ruleta {
             radius * 2,
             radius * 2,
             {
-                name: bid.amount.toString(),
-                option: RectOption.CELL,
+                name: amount.toString(),
                 fontSize: 14
             }
         ).drawText(ui);
-    }
-
-    getNthRect(n: number): Rect {
-        const {
-            grid: { width, height },
-            start,
-            lineWidth
-        } = this.config;
-        const firstRed = n < 11 || (n > 18 && n < 29);
-        const even = n % 2 == 0;
-        const color =
-            n == 0
-                ? Color.GREEN
-                : firstRed
-                ? even
-                    ? Color.BLACK
-                    : Color.RED
-                : even
-                ? Color.RED
-                : Color.BLACK;
-        const x = Math.ceil(n / 3);
-        const y = n % 3 == 0 ? 0 : n % 3 == 2 ? 1 : 2;
-        const rect = new Rect(
-            x * width + start.x,
-            y * height + start.y,
-            width - lineWidth,
-            (n != 0 ? 1 : 3) * height - lineWidth,
-            {
-                name: n.toString(),
-                option: RectOption.CELL,
-                background: color,
-                board: this.vp.board,
-                borderColor: Color.FULLBLACK,
-                borderWidth: lineWidth
-            }
-        );
-        return rect;
     }
 }
