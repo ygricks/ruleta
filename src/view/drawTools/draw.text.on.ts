@@ -1,15 +1,13 @@
 import { ICanvas } from '../../viewport/interfaces/icanvas';
-import { TextStyle } from '../../figure';
+import { FigureProfile, TextStyle } from '../../figure';
 
 export function drawTextOn(
     onBoard: ICanvas,
-    fx: number,
-    fy: number,
-    fw: number,
-    fh: number,
+    profile: FigureProfile,
     text: TextStyle
 ): void {
     const { ctx } = onBoard;
+    const { x: fx, y: fy, w: fw, h: fh } = profile;
     const x = fx + fw / 2 - (text.size / 3.3) * text.text.length;
 
     // with descent

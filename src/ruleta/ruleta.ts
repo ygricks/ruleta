@@ -16,10 +16,10 @@ import {
     ProfileEnumerate,
     Shape
 } from '../figure';
-import { Rect } from '../rect';
 import { ViewPort } from '../viewport';
 import { RuletaConfig } from './config';
 import { IConfig, ICont, IWinnerBid } from './intefaces';
+import { drawRectOn } from '../view/drawTools/draw.rect.on';
 
 export class Ruleta {
     private readonly vp: ViewPort;
@@ -111,32 +111,22 @@ export class Ruleta {
     drawCont() {
         const { ui } = this.vp;
 
-        const tuple = ProfileEnumerate(this.profile[Figure.CONT]);
-        ui.ctx.clearRect(...tuple);
-        drawTextOn(ui, ...tuple, {
+        const profile = this.profile[Figure.CONT];
+        ui.ctx.clearRect(...ProfileEnumerate(profile));
+        drawTextOn(ui, profile, {
             text: this.cont.value.toString(),
             size: FigureText[Figure.CONT].size
         });
     }
 
     drawFigures(): void {
-        const tipicStyle = {
-            board: this.vp.board,
-            borderColor: Color.FULLBLACK,
-            borderWidth: this.config.lineWidth
-        };
+        const { board } = this.vp;
 
         for (const key in Figure) {
             const figure = GetFigureByKey(key);
-            const style = {
-                ...tipicStyle,
-                background: GetColor(figure),
-                name: FigureText[figure].text,
-                fontSize: FigureText[figure].size
-            };
             const p = this.profile[figure];
-            const rect = new Rect(p.x, p.y, p.w, p.h, style);
-            rect.draw();
+            drawRectOn(board, p, GetColor(figure));
+            drawTextOn(board, p, FigureText[figure]);
         }
     }
 
@@ -364,10 +354,12 @@ export class Ruleta {
 
         drawTextOn(
             ui,
-            x + w - radius,
-            y + h - radius + 1,
-            radius * 2,
-            radius * 2,
+            {
+                x: x + w - radius,
+                y: y + h - radius + 1,
+                w: radius * 2,
+                h: radius * 2
+            },
             {
                 text: amount.toString(),
                 size: 14

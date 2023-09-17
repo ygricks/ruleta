@@ -61,10 +61,14 @@ export class Rect {
             fontSize = 36;
         }
         const board = this.getBoard(onBoard);
-        drawTextOn(board, this.x, this.y, this.w, this.h, {
-            text: this.param.name,
-            size: fontSize
-        });
+        drawTextOn(
+            board,
+            { x: this.x, y: this.y, w: this.w, h: this.h },
+            {
+                text: this.param.name,
+                size: fontSize
+            }
+        );
         return this;
     }
     draw(onBoard?: ICanvas): Rect {
