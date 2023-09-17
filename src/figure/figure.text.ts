@@ -1,7 +1,7 @@
 import { Figure } from './figure';
 
-export type Text = { text: string; size: number };
-type ProfileText = { [key in Figure]: Text };
+export type TextStyle = { text: string; size: number };
+type ProfileText = { [key in Figure]: TextStyle };
 
 const DSize = 30; // default font size
 const BSize = 24; // bid font size

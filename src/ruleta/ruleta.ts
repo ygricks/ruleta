@@ -1,4 +1,5 @@
 import { Color } from '../color';
+import { drawTextOn } from '../drawTools';
 import {
     Figure,
     FigureCell,
@@ -112,7 +113,7 @@ export class Ruleta {
 
         const tuple = ProfileEnumerate(this.profile[Figure.CONT]);
         ui.ctx.clearRect(...tuple);
-        Rect.drawTextOn(ui, ...tuple, {
+        drawTextOn(ui, ...tuple, {
             text: this.cont.value.toString(),
             size: FigureText[Figure.CONT].size
         });
@@ -361,7 +362,7 @@ export class Ruleta {
         ctx.fill();
         ctx.closePath();
 
-        Rect.drawTextOn(
+        drawTextOn(
             ui,
             x + w - radius,
             y + h - radius + 1,
