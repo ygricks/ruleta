@@ -12,7 +12,8 @@ import {
     GetFigureByValue,
     GetColor,
     FigureBidAmount,
-    ProfileEnumerate
+    ProfileEnumerate,
+    Shape
 } from '../figure';
 import { Rect } from '../rect';
 import { ViewPort } from '../viewport';
@@ -30,19 +31,38 @@ export class Ruleta {
     private profile: Profile;
     private bidAmount: FigureBidAmount;
     constructor() {
-        this.vp = new ViewPort();
+        this.profile = HorizontalProfile;
+        const shape = this.getMinSize();
+        this.vp = new ViewPort(shape);
         this.config = RuletaConfig;
 
         // @TODO choise profile || autodetect
-        this.profile = HorizontalProfile;
     }
 
     run() {
-        this.cont = { value: 10000 };
+        this.cont = { value: 100 };
         this.bidAmount = FigureBidAmount.B_ONE;
         this.drawBoard();
         this.drawUI();
         this.vp.view();
+    }
+
+    getMinSize(): Shape {
+        let w: number = 0;
+        let h: number = 0;
+        for (const key in Figure) {
+            const figure = GetFigureByKey(key);
+            const p = this.profile[figure];
+            const fw = p.x + p.w;
+            const fh = p.y + p.h;
+            if (fw > w) {
+                w = fw;
+            }
+            if (fh > h) {
+                h = fh;
+            }
+        }
+        return { w, h };
     }
 
     drawBoard() {

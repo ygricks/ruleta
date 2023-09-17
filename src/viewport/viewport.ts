@@ -1,3 +1,4 @@
+import { Shape } from '../figure';
 import { ICanvas, ISize } from './interfaces';
 
 export class ViewPort {
@@ -5,13 +6,20 @@ export class ViewPort {
     public readonly ui: ICanvas;
     public readonly out: ICanvas;
     public readonly size: ISize;
-    constructor() {
+    constructor(shape: Shape) {
         const body = document.querySelector('body');
         let out = 4; // remove on full screen
         this.size = {
             width: body.offsetWidth - out,
             height: body.offsetHeight - out
         };
+        if (shape.w > this.size.width) {
+            this.size.width = shape.w;
+        }
+        if (shape.h > this.size.height) {
+            this.size.height = shape.h;
+        }
+
         this.board = this.newCanvas('board');
         this.ui = this.newCanvas('ui');
         this.out = this.newCanvas('out');
