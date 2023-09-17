@@ -1,5 +1,5 @@
 import { Color } from '../color';
-import { drawTextOn } from '../drawTools';
+import { drawTextOn } from '../view/drawTools';
 import {
     Figure,
     FigureCell,

@@ -1,5 +1,5 @@
 import { IParam } from '.';
-import { drawTextOn } from '../drawTools';
+import { drawTextOn } from '../view/drawTools';
 import { ICanvas } from '../viewport';
 
 export class Rect {

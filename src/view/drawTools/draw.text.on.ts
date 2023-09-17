@@ -1,5 +1,5 @@
-import { ICanvas } from '../viewport/interfaces/icanvas';
-import { TextStyle } from '../figure';
+import { ICanvas } from '../../viewport/interfaces/icanvas';
+import { TextStyle } from '../../figure';
 
 export function drawTextOn(
     onBoard: ICanvas,
