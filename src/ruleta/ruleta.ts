@@ -1,5 +1,5 @@
 import { Color } from '../color';
-import { drawTextOn } from '../view/drawTools';
+import { clearRect, drawRectBorder, drawTextOn } from '../view/drawTools';
 import {
     Figure,
     FigureCell,
@@ -13,13 +13,12 @@ import {
     GetFigureByValue,
     GetColor,
     FigureBidAmount,
-    ProfileEnumerate,
     Shape
 } from '../figure';
 import { ViewPort } from '../viewport';
 import { RuletaConfig } from './config';
 import { IConfig, ICont, IWinnerBid } from './intefaces';
-import { drawRectOn } from '../view/drawTools/draw.rect.on';
+import { drawRectOn } from '../view/drawTools';
 
 export class Ruleta {
     private readonly vp: ViewPort;
@@ -85,34 +84,15 @@ export class Ruleta {
         this.drawBids();
         this.drawActiveAmount();
         if (figure) {
-            const tuple = ProfileEnumerate(this.profile[figure]);
-            this.drawRectBorder(...tuple, Color.YELLOW);
+            drawRectBorder(this.vp.ui, this.profile[figure], Color.YELLOW);
         }
-    }
-
-    drawRectBorder(
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-        c: Color,
-        lh: number = 2
-    ) {
-        const { ctx } = this.vp.ui;
-
-        ctx.beginPath();
-        ctx.strokeStyle = c;
-        ctx.lineWidth = lh;
-        ctx.strokeRect(x, y, w, h);
-        ctx.fill();
-        ctx.stroke();
     }
 
     drawCont() {
         const { ui } = this.vp;
 
         const profile = this.profile[Figure.CONT];
-        ui.ctx.clearRect(...ProfileEnumerate(profile));
+        clearRect(ui, profile);
         drawTextOn(ui, profile, {
             text: this.cont.value.toString(),
             size: FigureText[Figure.CONT].size
@@ -168,13 +148,11 @@ export class Ruleta {
     }
 
     drawActiveAmount() {
-        const { ui } = this.vp;
         const index = Object.values(FigureBidAmount).indexOf(this.bidAmount);
         const key = Object.keys(FigureBidAmount)[index];
         const figure = Figure[key as keyof typeof Figure];
 
-        const p = ProfileEnumerate(this.profile[figure]);
-        this.drawRectBorder(...p, Color.LIME);
+        drawRectBorder(this.vp.ui, this.profile[figure], Color.LIME);
     }
 
     getClickedFigure(x: number, y: number): Figure | null {
