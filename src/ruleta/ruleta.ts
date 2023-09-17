@@ -24,19 +24,17 @@ export class Ruleta {
     private readonly vp: ViewPort;
     private readonly config: IConfig;
     private cont: ICont;
-    private zones: Partial<{ [key in Figure]: Rect }> = {};
     private nextClickClear: boolean;
     private bids: Partial<{ [key in Figure]: number }> = {};
     private winnerBids: IWinnerBid[] = [];
     private profile: Profile;
     private bidAmount: FigureBidAmount;
     constructor() {
+        // @TODO choise profile || autodetect
         this.profile = HorizontalProfile;
         const shape = this.getMinSize();
         this.vp = new ViewPort(shape);
         this.config = RuletaConfig;
-
-        // @TODO choise profile || autodetect
     }
 
     run() {
@@ -86,11 +84,27 @@ export class Ruleta {
         this.drawBids();
         this.drawActiveAmount();
         if (figure) {
-            const originalRect: Rect = this.zones[figure];
-            originalRect
-                .clone({ borderColor: Color.YELLOW, background: null })
-                .drawRect(this.vp.ui);
+            const tuple = ProfileEnumerate(this.profile[figure]);
+            this.drawRectBorder(...tuple, Color.YELLOW);
         }
+    }
+
+    drawRectBorder(
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        c: Color,
+        lh: number = 2
+    ) {
+        const { ctx } = this.vp.ui;
+
+        ctx.beginPath();
+        ctx.strokeStyle = c;
+        ctx.lineWidth = lh;
+        ctx.strokeRect(x, y, w, h);
+        ctx.fill();
+        ctx.stroke();
     }
 
     drawCont() {
@@ -121,7 +135,6 @@ export class Ruleta {
             };
             const p = this.profile[figure];
             const rect = new Rect(p.x, p.y, p.w, p.h, style);
-            this.zones[figure] = rect;
             rect.draw();
         }
     }
@@ -169,17 +182,14 @@ export class Ruleta {
         const key = Object.keys(FigureBidAmount)[index];
         const figure = Figure[key as keyof typeof Figure];
 
-        // const p = this.profile[figure];
-        const originalRect: Rect = this.zones[figure];
-        originalRect
-            .clone({ borderColor: Color.LIME, background: null })
-            .drawRect(ui);
+        const p = ProfileEnumerate(this.profile[figure]);
+        this.drawRectBorder(...p, Color.LIME);
     }
 
     getClickedFigure(x: number, y: number): Figure | null {
         for (const key in Figure) {
             const figure = GetFigureByKey(key);
-            const rect = this.zones[figure];
+            const rect = this.profile[figure];
             if (
                 rect.x < x &&
                 x < rect.x + rect.w &&
@@ -209,21 +219,20 @@ export class Ruleta {
             for (const bid in this.bids) {
                 const bidFigure: Figure = GetFigureByValue(bid);
                 const amount: number = this.bids[bidFigure];
-                const rect: Rect = this.zones[bidFigure];
                 outcome += amount;
                 const multiplier = this.bidMultiplier(bidFigure, figure);
                 if (multiplier) {
                     const winnerBid: IWinnerBid = {
-                        rect: rect,
-                        amount: amount,
-                        multiplier: multiplier,
+                        figure,
+                        amount,
+                        multiplier,
                         sum: amount * multiplier
                     };
                     this.winnerBids.push(winnerBid);
                     income += winnerBid.sum;
                     console.log(
                         `    + order: ${
-                            rect.param.name
+                            FigureText[figure].text
                         }, amount: ${amount} * ${multiplier}, pureIncome: ${
                             amount * multiplier - amount
                         }`
@@ -338,9 +347,8 @@ export class Ruleta {
             ui
         } = this.vp;
 
-        const rect = this.zones[figure];
         const amount = this.bids[figure];
-        let { x, y, w, h } = rect;
+        let { x, y, w, h } = this.profile[figure];
 
         const radius = 18;
         const bidMargin = 10;
@@ -353,15 +361,16 @@ export class Ruleta {
         ctx.fill();
         ctx.closePath();
 
-        const irect = new Rect(
+        Rect.drawTextOn(
+            ui,
             x + w - radius,
             y + h - radius + 1,
             radius * 2,
             radius * 2,
             {
-                name: amount.toString(),
-                fontSize: 14
+                text: amount.toString(),
+                size: 14
             }
-        ).drawText(ui);
+        );
     }
 }
