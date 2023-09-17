@@ -8,6 +8,7 @@ const line12: Shape = { w: size.w * 2, h: size.h };
 const line3: Shape = { w: size.w * 3, h: size.h * 0.8 };
 const line4: Shape = { w: size.w * 4, h: size.h * 0.8 };
 const line6: Shape = { w: size.w * 6, h: size.h * 0.8 };
+const bidSize: Shape = { w: size.w * 0.8, h: size.h * 0.8 };
 
 // cell profile for horizontal view
 export const HorizontalProfile: Profile = {
@@ -61,5 +62,27 @@ export const HorizontalProfile: Profile = {
     [Figure.RED]: { ...CordMultiply(size, { x: 7, y: 4.6 }), ...line3 },
     [Figure.BLACK]: { ...CordMultiply(size, { x: 10, y: 4.6 }), ...line3 },
     [Figure.ROLL]: { ...CordMultiply(size, { x: 1, y: 7 }), ...line3 },
-    [Figure.CONT]: { ...CordMultiply(size, { x: 4, y: 7 }), ...line3 }
+    [Figure.CONT]: { ...CordMultiply(size, { x: 4, y: 7 }), ...line3 },
+    [Figure.B_HALF]: { ...CordMultiply(bidSize, { x: 9, y: 7.2 }), ...bidSize },
+    [Figure.B_ONE]: { ...CordMultiply(bidSize, { x: 10, y: 7.2 }), ...bidSize },
+    [Figure.B_FIVE]: {
+        ...CordMultiply(bidSize, { x: 11, y: 7.2 }),
+        ...bidSize
+    },
+    [Figure.B_TWENTYFIVE]: {
+        ...CordMultiply(bidSize, { x: 12, y: 7.2 }),
+        ...bidSize
+    },
+    [Figure.B_HUNDRED]: {
+        ...CordMultiply(bidSize, { x: 13, y: 7.2 }),
+        ...bidSize
+    },
+    [Figure.B_FIVE_HUNDRED]: {
+        ...CordMultiply(bidSize, { x: 14, y: 7.2 }),
+        ...bidSize
+    },
+    [Figure.B_THOUSAND]: {
+        ...CordMultiply(bidSize, { x: 15, y: 7.2 }),
+        ...bidSize
+    }
 };

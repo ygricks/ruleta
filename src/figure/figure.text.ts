@@ -3,7 +3,8 @@ import { Figure } from './figure';
 export type Text = { text: string; size: number };
 type ProfileText = { [key in Figure]: Text };
 
-const DSize = 30;
+const DSize = 30; // default font size
+const BSize = 24; // bid font size
 
 export const FigureText: ProfileText = {
     [Figure._0]: { text: '0', size: DSize },
@@ -56,5 +57,12 @@ export const FigureText: ProfileText = {
     [Figure.RED]: { text: 'RED', size: DSize },
     [Figure.BLACK]: { text: 'BLACK', size: DSize },
     [Figure.ROLL]: { text: 'ROLL', size: DSize },
-    [Figure.CONT]: { text: '', size: DSize }
+    [Figure.CONT]: { text: '', size: DSize },
+    [Figure.B_HALF]: { text: '0.5', size: BSize },
+    [Figure.B_ONE]: { text: '1', size: BSize },
+    [Figure.B_FIVE]: { text: '5', size: BSize },
+    [Figure.B_TWENTYFIVE]: { text: '25', size: BSize },
+    [Figure.B_HUNDRED]: { text: '100', size: BSize },
+    [Figure.B_FIVE_HUNDRED]: { text: '500', size: BSize },
+    [Figure.B_THOUSAND]: { text: '1000', size: BSize }
 };

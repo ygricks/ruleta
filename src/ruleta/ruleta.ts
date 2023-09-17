@@ -1,4 +1,4 @@
-import { Color, BidColor } from '../color';
+import { Color } from '../color';
 import {
     Figure,
     FigureCell,
@@ -10,7 +10,9 @@ import {
     FigureKeys,
     GetFigureByKey,
     GetFigureByValue,
-    GetColor
+    GetColor,
+    FigureBidAmount,
+    ProfileEnumerate
 } from '../figure';
 import { Rect } from '../rect';
 import { ViewPort } from '../viewport';
@@ -22,10 +24,11 @@ export class Ruleta {
     private readonly config: IConfig;
     private cont: ICont;
     private zones: Partial<{ [key in Figure]: Rect }> = {};
-    private nextClickRedraw: boolean;
+    private nextClickClear: boolean;
     private bids: Partial<{ [key in Figure]: number }> = {};
     private winnerBids: IWinnerBid[] = [];
     private profile: Profile;
+    private bidAmount: FigureBidAmount;
     constructor() {
         this.vp = new ViewPort();
         this.config = RuletaConfig;
@@ -36,7 +39,9 @@ export class Ruleta {
 
     run() {
         this.cont = { value: 10000 };
+        this.bidAmount = FigureBidAmount.B_ONE;
         this.drawBoard();
+        this.drawUI();
         this.vp.view();
     }
 
@@ -51,47 +56,33 @@ export class Ruleta {
         ctx.fillStyle = Color.DARKGREEN;
         ctx.fillRect(0, 0, width, height);
         this.drawFigures();
-        // this.drawBidsAmount();
-        this.drawCont();
         out.canvas.addEventListener('click', this.click.bind(this));
     }
 
-    // drawBidsAmount() {
-    //     const {
-    //         board: { ctx },
-    //         board
-    //     } = this.vp;
-    //     const amounts: { x: number; y: number; c: BidColor; n: string }[] = [
-    //         { x: 700, y: 480, n: '0.5', c: BidColor.HALF },
-    //         { x: 760, y: 480, n: '1', c: BidColor.ONE },
-    //         { x: 820, y: 480, n: '5', c: BidColor.FIVE },
-    //         { x: 880, y: 480, n: '25', c: BidColor.TWENTYFILE },
-    //         { x: 940, y: 480, n: '100', c: BidColor.HUNDRED },
-    //         { x: 1000, y: 480, n: '500', c: BidColor.FIVE_HUNDRED },
-    //         { x: 1060, y: 480, n: '1k', c: BidColor.THOUSAND }
-    //     ];
-    //     for (const amount of amounts) {
-    //         const { x, y, c, n } = amount;
-    //         const rect = new Rect(
-    //             x,
-    //             y,
-    //             this.config.grid.width,
-    //             this.config.grid.height,
-    //             {
-    //                 name: n,
-    //                 // option: RectOption.BID_AMOUNT,
-    //                 background: c,
-    //                 board: board,
-    //                 fontSize: 24
-    //             }
-    //         ).draw();
-    //         // ctx.beginPath();
-    //         // ctx.arc(x, y, 25, 0, 2 * Math.PI);
-    //         // ctx.fillStyle = c;
-    //         // ctx.stroke();
-    //         // ctx.fill();
-    //     }
-    // }
+    drawUI(figure?: Figure) {
+        this.vp.ui.clear();
+
+        this.drawCont();
+        this.drawBids();
+        this.drawActiveAmount();
+        if (figure) {
+            const originalRect: Rect = this.zones[figure];
+            originalRect
+                .clone({ borderColor: Color.YELLOW, background: null })
+                .drawRect(this.vp.ui);
+        }
+    }
+
+    drawCont() {
+        const { ui } = this.vp;
+
+        const tuple = ProfileEnumerate(this.profile[Figure.CONT]);
+        ui.ctx.clearRect(...tuple);
+        Rect.drawTextOn(ui, ...tuple, {
+            text: this.cont.value.toString(),
+            size: FigureText[Figure.CONT].size
+        });
+    }
 
     drawFigures(): void {
         const tipicStyle = {
@@ -115,36 +106,24 @@ export class Ruleta {
         }
     }
 
-    drawCont() {
-        const {
-            vp: { ui },
-            vp
-        } = this;
-        const { x, y, w, h } = this.profile[Figure.CONT];
-        const { size } = FigureText[Figure.CONT];
-        ui.ctx.clearRect(x, y, w, h);
-        Rect.drawTextOn(ui, x, y, w, h, {
-            text: this.cont.value.toString(),
-            size
-        });
-    }
-
     click(event: PointerEvent) {
         const { clientX: x, clientY: y } = event;
         const figure: Figure | null = this.getClickedFigure(x, y);
-        if (this.nextClickRedraw) {
-            this.nextClickRedraw = false;
+        if (this.nextClickClear) {
+            this.nextClickClear = false;
+            this.bids = {};
+            this.winnerBids = [];
             this.vp.ui.clear();
         }
         if (figure === null) {
             if (!Object.keys(this.bids).length) {
-                this.drawCont();
+                this.drawUI();
                 this.vp.view();
             }
             return;
         }
 
-        const bidAmount = 100; // @TODO chenge by selected amount
+        const bidAmount = parseFloat(this.bidAmount.toString().slice(2)); // @TODO chenge by selected amount
 
         if (FigureCell.hasOwnProperty(FigureKeys[figure])) {
             this.addBid(figure, bidAmount);
@@ -155,10 +134,26 @@ export class Ruleta {
                 this.roll();
                 return;
             }
+        } else if (FigureBidAmount.hasOwnProperty(FigureKeys[figure])) {
+            this.bidAmount = figure as undefined as FigureBidAmount;
         } else {
             console.error(new Error(`imposible click ${figure}`));
         }
+        this.drawUI();
         this.vp.view();
+    }
+
+    drawActiveAmount() {
+        const { ui } = this.vp;
+        const index = Object.values(FigureBidAmount).indexOf(this.bidAmount);
+        const key = Object.keys(FigureBidAmount)[index];
+        const figure = Figure[key as keyof typeof Figure];
+
+        // const p = this.profile[figure];
+        const originalRect: Rect = this.zones[figure];
+        originalRect
+            .clone({ borderColor: Color.LIME, background: null })
+            .drawRect(ui);
     }
 
     getClickedFigure(x: number, y: number): Figure | null {
@@ -188,10 +183,6 @@ export class Ruleta {
             console.error(new Error(`figure was not found ${ball}`));
             return;
         }
-        const originalRect: Rect = this.zones[figure];
-        originalRect
-            .clone({ borderColor: Color.YELLOW, background: null })
-            .drawRect(ui);
         let income = 0;
         let outcome = 0;
         if (Object.keys(this.bids).length) {
@@ -224,11 +215,9 @@ export class Ruleta {
             `WIN: ${income} | OUT: ${outcome}, IN: ${income - outcome}`
         );
         this.cont.value += income;
-        this.drawCont();
-        this.bids = {};
-        this.winnerBids = [];
+        this.drawUI(figure);
         vp.view();
-        this.nextClickRedraw = true;
+        this.nextClickClear = true;
     }
 
     bidMultiplier(bidFigure: Figure, ballFigure: Figure): number {
@@ -314,8 +303,13 @@ export class Ruleta {
         } else {
             this.bids[figure] = amount;
         }
-        this.drawBid(figure);
-        this.drawCont();
+    }
+
+    drawBids() {
+        for (const key of Object.keys(this.bids)) {
+            const figure: Figure = GetFigureByValue(key);
+            this.drawBid(figure);
+        }
     }
 
     drawBid(figure: Figure) {

@@ -1,4 +1,5 @@
 export * from './figure';
+export * from './figure.bid.amount';
 export * from './figure.cell';
 export * from './figure.color';
 export * from './figure.cord';

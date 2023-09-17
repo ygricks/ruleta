@@ -1,10 +1,10 @@
-import { BidColor, Color } from '../color';
+import { Color } from '../color';
 import { ICanvas } from '../viewport';
 
 export interface IParam {
     name: string;
-    background?: Color | BidColor;
-    borderColor?: Color | BidColor;
+    background?: Color;
+    borderColor?: Color;
     borderWidth?: number;
     board?: ICanvas;
     fontSize?: number;
