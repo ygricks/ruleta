@@ -19,6 +19,7 @@ import { ViewPort } from '../viewport';
 import { RuletaConfig } from './config';
 import { IConfig, ICont, IWinnerBid } from './intefaces';
 import { drawRectOn } from '../view/drawTools';
+import { Action } from './actions';
 
 export class Ruleta {
     private readonly vp: ViewPort;
@@ -29,6 +30,21 @@ export class Ruleta {
     private winnerBids: IWinnerBid[] = [];
     private profile: Profile;
     private bidAmount: FigureBidAmount;
+    public watch:{[key in Action]?:Function[] } = {};
+    public on(action:Action,func:Function) {
+        if(!Object.keys(this.watch).includes(action)){
+            this.watch[action] = [];
+        }
+        this.watch[action].push(func);
+        console.log(this.watch);
+    }
+    private runAction(action:Action){
+        if(Object.keys(this.watch).includes(action)){
+            for(const func of this.watch[action]){
+                func();
+            }
+        }
+    }
     constructor() {
         // @TODO choise profile || autodetect
         this.profile = HorizontalProfile;
@@ -37,7 +53,10 @@ export class Ruleta {
         this.config = RuletaConfig;
     }
 
+
+
     run() {
+        this.runAction(Action.START);
         this.cont = { value: 100 };
         this.bidAmount = FigureBidAmount.B_ONE;
         this.drawBoard();
