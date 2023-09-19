@@ -1,4 +1,4 @@
 export enum Action {
     START = 'start',
-    ROLL = 'roll',
+    ROLL = 'roll'
 }

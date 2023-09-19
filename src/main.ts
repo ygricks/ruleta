@@ -1,6 +1,8 @@
 import { Ruleta } from './ruleta';
+import { ByCanvas } from './view';
 
 window.addEventListener('load', function () {
     const ruleta = new Ruleta();
-    ruleta.run();
+    const view = new ByCanvas(ruleta);
+    ruleta.start();
 });
