@@ -32,13 +32,15 @@ export class Ruleta {
         }
     }
 
-    constructor() {}
+    public constructor() {}
 
     public getCont(): number {
         return this.cont.value;
     }
+
     public getBids(): Bids {
-        return this.bids;
+        const bids = JSON.parse(JSON.stringify(this.bids)) as Bids;
+        return bids;
     }
 
     public start() {
@@ -46,7 +48,7 @@ export class Ruleta {
         this.runAction(Action.START);
     }
 
-    public roll() {
+    public async roll() {
         const ball: number = Math.floor(Math.random() * 37);
         const figure: Figure = GetFigureByValue(ball.toString());
         if (!figure) {
@@ -85,9 +87,18 @@ export class Ruleta {
         );
         this.cont.value += income;
         this.runAction(Action.ROLL, figure);
-
         this.bids = {};
         this.winnerBids = [];
+        if (this.cont.value === 0) {
+            await this.tryAgain();
+        }
+    }
+
+    private async tryAgain() {
+        if (confirm('you lose\ndo you want to try again ?')) {
+            this.cont.value = 100;
+            this.runAction(Action.RESTART);
+        }
     }
 
     private bidMultiplier(bidFigure: Figure, ballFigure: Figure): number {
@@ -157,6 +168,10 @@ export class Ruleta {
                         return 2;
                     }
                     break;
+                default:
+                    throw new Error(
+                        `that figure is now allowed "${bidFigure}"`
+                    );
             }
         }
         return 0;
