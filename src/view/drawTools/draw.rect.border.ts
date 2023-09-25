@@ -8,8 +8,23 @@ export function drawRectBorder(
     c: Color,
     lh: number = 2
 ) {
+    const half = lh / 2;
     const { ctx } = onBoard;
-    const { x, y, w, h } = profile;
+    let { x, y, w, h } = profile;
+
+    const margin: string = 'out';
+
+    if (margin === 'out') {
+        x = x - half;
+        y = y - half;
+        w = w + lh - 1;
+        h = h + lh;
+    } else if (margin === 'in') {
+        x = x + half;
+        y = y + half;
+        w = w - lh - 1;
+        h = h - lh - 1;
+    }
 
     ctx.beginPath();
     ctx.strokeStyle = c;
