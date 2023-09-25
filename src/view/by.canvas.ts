@@ -34,20 +34,27 @@ export class ByCanvas {
     private register(): void {
         this.ruleta.on(Action.START, this._start.bind(this));
         this.ruleta.on(Action.ROLL, this._roll.bind(this));
+        this.ruleta.on(Action.RESTART, this._restart.bind(this));
     }
 
-    _start() {
+    private _start() {
         this.drawBoard();
         this.drawUI();
         this.vp.view();
     }
-    _roll(_figure: any) {
+
+    private _roll(_figure: any) {
         const figure = _figure as Figure;
         this.drawUI(figure);
         this.vp.view();
     }
 
-    getMinSize(): Shape {
+    private _restart(_figure: any) {
+        this.drawUI();
+        this.vp.view();
+    }
+
+    private getMinSize(): Shape {
         let w: number = 0;
         let h: number = 0;
         for (const key in Figure) {
@@ -64,20 +71,14 @@ export class ByCanvas {
         }
         return { w, h };
     }
-    drawBoard() {
-        const {
-            board: { ctx },
-            size: { width, height },
-            out
-        } = this.vp;
-        ctx.fillStyle = Color.DARKGREEN;
-        ctx.fillRect(0, 0, width, height);
-        this.drawFigures();
-        out.canvas.addEventListener('click', this.click.bind(this));
-    }
-    drawFigures(): void {
-        const { board } = this.vp;
 
+    private drawBoard() {
+        this.drawFigures();
+        this.vp.out.canvas.addEventListener('click', this.click.bind(this));
+    }
+
+    private drawFigures(): void {
+        const { board } = this.vp;
         for (const key in Figure) {
             const figure = GetFigureByKey(key);
             const p = this.profile[figure];
@@ -85,13 +86,12 @@ export class ByCanvas {
             drawTextOn(board, p, FigureText[figure]);
         }
     }
-    click(event: PointerEvent) {
+
+    private click(event: PointerEvent) {
         const { clientX: x, clientY: y } = event;
         const figure: Figure | null = this.getClickedFigure(x, y);
         if (this.nextClickClear) {
             this.nextClickClear = false;
-            // this.bids = {};
-            // this.winnerBids = [];
             this.vp.ui.clear();
         }
         if (figure === null) {
@@ -101,9 +101,7 @@ export class ByCanvas {
             }
             return;
         }
-
         const bidAmount = parseFloat(this.bidAmount.toString().slice(2)); // @TODO chenge by selected amount
-
         if (FigureCell.hasOwnProperty(FigureKeys[figure])) {
             this.ruleta.addBid(figure, bidAmount);
         } else if (FigureOption.hasOwnProperty(FigureKeys[figure])) {
@@ -122,7 +120,7 @@ export class ByCanvas {
         this.vp.view();
     }
 
-    getClickedFigure(x: number, y: number): Figure | null {
+    private getClickedFigure(x: number, y: number): Figure | null {
         for (const key in Figure) {
             const figure = GetFigureByKey(key);
             const rect = this.profile[figure];
@@ -138,9 +136,8 @@ export class ByCanvas {
         return null;
     }
 
-    drawUI(figure?: Figure) {
+    private drawUI(figure?: Figure) {
         this.vp.ui.clear();
-
         this.drawCont();
         this.drawBids();
         this.drawActiveAmount();
@@ -148,7 +145,8 @@ export class ByCanvas {
             drawRectBorder(this.vp.ui, this.profile[figure], Color.YELLOW);
         }
     }
-    drawCont() {
+
+    private drawCont() {
         const { ui } = this.vp;
 
         const profile = this.profile[Figure.CONT];
@@ -158,22 +156,20 @@ export class ByCanvas {
             size: FigureText[Figure.CONT].size
         });
     }
-    drawBids() {
+    private drawBids() {
         for (const key of Object.keys(this.ruleta.getBids())) {
             const figure: Figure = GetFigureByValue(key);
             this.drawBid(figure);
         }
     }
-    drawBid(figure: Figure) {
+    private drawBid(figure: Figure) {
         const {
             ui: { ctx },
             ui
         } = this.vp;
-
         const bids = this.ruleta.getBids();
         const amount = bids[figure];
         let { x, y, w, h } = this.profile[figure];
-
         const radius = 18;
         const bidMargin = 10;
         x = x - bidMargin;
@@ -184,7 +180,6 @@ export class ByCanvas {
         ctx.arc(x + w, y + h, radius, 0, 2 * Math.PI);
         ctx.fill();
         ctx.closePath();
-
         drawTextOn(
             ui,
             {
@@ -200,11 +195,10 @@ export class ByCanvas {
         );
     }
 
-    drawActiveAmount() {
+    private drawActiveAmount() {
         const index = Object.values(FigureBidAmount).indexOf(this.bidAmount);
         const key = Object.keys(FigureBidAmount)[index];
         const figure = Figure[key as keyof typeof Figure];
-
         drawRectBorder(this.vp.ui, this.profile[figure], Color.LIME);
     }
 }

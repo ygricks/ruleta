@@ -1,3 +1,4 @@
+import { Color } from '../color';
 import { Shape } from '../figure';
 import { ICanvas, ISize } from './interfaces';
 
@@ -6,9 +7,11 @@ export class ViewPort {
     public readonly ui: ICanvas;
     public readonly out: ICanvas;
     public readonly size: ISize;
+    private readonly margin = 10;
+
     constructor(shape: Shape) {
         const body = document.querySelector('body');
-        let out = 4; // remove on full screen
+        let out = 0; // remove on full screen
         this.size = {
             width: body.offsetWidth - out,
             height: body.offsetHeight - out
@@ -19,14 +22,13 @@ export class ViewPort {
         if (shape.h > this.size.height) {
             this.size.height = shape.h;
         }
-
         this.board = this.newCanvas('board');
         this.ui = this.newCanvas('ui');
         this.out = this.newCanvas('out');
-
         body.appendChild(this.out.canvas);
     }
-    newCanvas(id: string): ICanvas {
+
+    private newCanvas(id: string): ICanvas {
         const canvas = document.createElement('canvas');
         const { width, height } = this.size;
         canvas.width = width;
@@ -40,14 +42,22 @@ export class ViewPort {
         })(ctx, width, height);
         return { canvas, ctx, clear };
     }
-    view() {
+
+    public view() {
         this.out.clear();
+        this.out.ctx.fillStyle = Color.DARKGREEN;
+        this.out.ctx.fillRect(
+            0,
+            0,
+            this.out.canvas.width,
+            this.out.canvas.height
+        );
         const {
-            board: { canvas: source1 },
-            ui: { canvas: source2 },
+            board: { canvas: boardCanvas },
+            ui: { canvas: uiCanvas },
             out: { ctx }
         } = this;
-        ctx.drawImage(source1, 0, 0, this.size.width, this.size.height);
-        ctx.drawImage(source2, 0, 0, this.size.width, this.size.height);
+        ctx.drawImage(boardCanvas, 0, 0, this.size.width, this.size.height);
+        ctx.drawImage(uiCanvas, 0, 0, this.size.width, this.size.height);
     }
 }
