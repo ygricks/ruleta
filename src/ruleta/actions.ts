@@ -1,5 +1,6 @@
 export enum Action {
     START = 'start',
     ROLL = 'roll',
-    RESTART = 'restart'
+    RESTART = 'restart',
+    CONT_CHANGE = 'cont_change'
 }

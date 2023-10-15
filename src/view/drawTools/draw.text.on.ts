@@ -1,5 +1,6 @@
 import { ICanvas } from '../../viewport/interfaces/icanvas';
 import { FigureProfile, TextStyle } from '../../figure';
+import { textMiddleAlign } from './draw.text.middle';
 
 export function drawTextOn(
     onBoard: ICanvas,
@@ -7,15 +8,7 @@ export function drawTextOn(
     text: TextStyle
 ): void {
     const { ctx } = onBoard;
-    const { x: fx, y: fy, w: fw, h: fh } = profile;
-    const x = fx + fw / 2 - (text.size / 3.3) * text.text.length;
-
-    // with descent
-    // const y = this.fy + this.h/2 + text.size/3.9;
-
-    // without descent
-    const y = fy + fh / 2 + text.size / 3;
-
+    const { x, y } = textMiddleAlign(profile, text);
     ctx.beginPath();
     ctx.font = `${text.size}px Courier New`;
     ctx.fillStyle = 'white';

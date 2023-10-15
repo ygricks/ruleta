@@ -45,6 +45,7 @@ export class Ruleta {
 
     public start() {
         this.cont = { value: 100 };
+        this.runAction(Action.CONT_CHANGE, this.cont.value);
         this.runAction(Action.START);
     }
 
@@ -86,6 +87,7 @@ export class Ruleta {
             `WIN: ${income} | OUT: ${outcome}, IN: ${income - outcome}`
         );
         this.cont.value += income;
+        this.runAction(Action.CONT_CHANGE, this.cont.value);
         this.runAction(Action.ROLL, figure);
         this.bids = {};
         this.winnerBids = [];
@@ -97,6 +99,7 @@ export class Ruleta {
     private async tryAgain() {
         if (confirm('you lose\ndo you want to try again ?')) {
             this.cont.value = 100;
+            this.runAction(Action.CONT_CHANGE, this.cont.value);
             this.runAction(Action.RESTART);
         }
     }
@@ -180,6 +183,7 @@ export class Ruleta {
     public addBid(figure: Figure, amount: number): void {
         if (this.cont.value >= amount) {
             this.cont.value -= amount;
+            this.runAction(Action.CONT_CHANGE, this.cont.value);
         } else {
             return null;
         }
