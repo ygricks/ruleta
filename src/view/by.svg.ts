@@ -138,16 +138,11 @@ export class BySVG {
         this.body.appendChild(this.svg);
         BySVG.writeStyle(this.body, { background: Color.DARKGREEN });
         const minSize = this.getMinSize();
-        // const size = {
-        //     width: this.body.offsetWidth,
-        //     height: this.body.offsetHeight
-        // };
         BySVG.writeAttributes(this.svg, {
             width: minSize.w,
             height: minSize.h
         });
     }
-
 
     private getMinSize(): Shape {
         let w: number = 0;
