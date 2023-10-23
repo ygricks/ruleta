@@ -10,7 +10,8 @@ import {
     GetFigureByKey,
     GetFigureByValue,
     HorizontalProfile,
-    Profile
+    Profile,
+    Shape
 } from '../figure';
 import { Action, Ruleta } from '../ruleta';
 
@@ -136,14 +137,34 @@ export class BySVG {
         this.svg = document.createElementNS(this.ns, 'svg');
         this.body.appendChild(this.svg);
         BySVG.writeStyle(this.body, { background: Color.DARKGREEN });
-        const size = {
-            width: this.body.offsetWidth,
-            height: this.body.offsetHeight
-        };
+        const minSize = this.getMinSize();
+        // const size = {
+        //     width: this.body.offsetWidth,
+        //     height: this.body.offsetHeight
+        // };
         BySVG.writeAttributes(this.svg, {
-            width: size.width,
-            height: size.height
+            width: minSize.w,
+            height: minSize.h
         });
+    }
+
+
+    private getMinSize(): Shape {
+        let w: number = 0;
+        let h: number = 0;
+        for (const key in Figure) {
+            const figure = GetFigureByKey(key);
+            const p = this.profile[figure];
+            const fw = p.x + p.w;
+            const fh = p.y + p.h;
+            if (fw > w) {
+                w = fw;
+            }
+            if (fh > h) {
+                h = fh;
+            }
+        }
+        return { w, h };
     }
 
     getDomdBid(figure: Figure, amount: number): Element {
