@@ -25,6 +25,7 @@ export class BySVG {
     private bidAmount: FigureBidAmount;
     private bidsGroup: Element;
     private clear: boolean = false;
+    private fullScreen: boolean = false;
 
     constructor(public readonly ruleta: Ruleta) {
         this.init();
@@ -94,13 +95,14 @@ export class BySVG {
             const bidAmount = parseFloat(this.bidAmount.toString().slice(2));
             this.ruleta.addBid(figure, bidAmount);
             this.viewBids();
-        }
-        if (FigureBidAmount.hasOwnProperty(figureKey)) {
+        } else if (FigureBidAmount.hasOwnProperty(figureKey)) {
             this.selectBidAmount(figure);
-        }
-        if (figure === Figure.ROLL) {
+        } else if (figure === Figure.ROLL) {
             console.info(`run Roll`);
             this.ruleta.roll();
+        } else if (figure === Figure.FULL_SCREEN) {
+            console.log('full screen');
+            this.triggerFullScreen();
         }
     }
 
@@ -166,7 +168,6 @@ export class BySVG {
         const key = FigureKeys[figure];
         const dataBid = `bid_${key}`;
         let g = this.svg.querySelector(`[data-bid=${dataBid}]`);
-        BySVG.writeAttributes(g, {});
         if (!g) {
             const radius = 18;
             const margin = 10;
@@ -180,7 +181,7 @@ export class BySVG {
             this.bidsGroup.appendChild(g);
             BySVG.writeAttributes(g, {
                 'data-bid': dataBid,
-                transform: `translate(${x}, ${y})`
+                transform: `translate(${BySVG.short(x)}, ${BySVG.short(y)})`
             });
             const circle = document.createElementNS(this.ns, 'circle');
             g.appendChild(circle);
@@ -226,12 +227,14 @@ export class BySVG {
             const color = GetColor(figure);
             const text = FigureText[figure];
             const rectStyle: Styles = {
-                width: profile.w + 'px',
-                height: profile.h + 'px',
+                width: BySVG.short(profile.w) + 'px',
+                height: BySVG.short(profile.h) + 'px',
                 fill: color
             };
             BySVG.writeAttributes(g, {
-                transform: `translate(${profile.x}, ${profile.y})`,
+                transform: `translate(${BySVG.short(profile.x)}, ${BySVG.short(
+                    profile.y
+                )})`,
                 'data-figure': key
             });
             const rect = document.createElementNS(this.ns, 'rect');
@@ -258,10 +261,23 @@ export class BySVG {
         BySVG.writeAttributes(this.bidsGroup, { 'data-bids': '---bids---' });
     }
 
+    private triggerFullScreen() {
+        if (this.fullScreen) {
+            document.exitFullscreen();
+        } else {
+            document.documentElement.requestFullscreen();
+        }
+        this.fullScreen = !this.fullScreen;
+    }
+
     private static writeStyle(ob: Element, styles: Styles) {
         let style: string[] = [];
         for (const key in styles) {
-            style.push(`${key}:${styles[key]};`);
+            if (typeof styles[key] === 'number') {
+                style.push(`${key}:${BySVG.short(styles[key] as number)};`);
+            } else {
+                style.push(`${key}:${styles[key]};`);
+            }
         }
         ob.setAttribute('style', style.join(''));
         return ob;
@@ -272,9 +288,17 @@ export class BySVG {
             if (a == 'text') {
                 ob.innerHTML = attr[a].toString();
             } else {
-                ob.setAttribute(a, attr[a].toString());
+                if (typeof attr[a] === 'number') {
+                    ob.setAttribute(a, BySVG.short(attr[a] as number));
+                } else {
+                    ob.setAttribute(a, attr[a].toString());
+                }
             }
         }
         return ob;
+    }
+
+    private static short(num: number): string {
+        return parseFloat(num.toFixed(2)) + '';
     }
 }
