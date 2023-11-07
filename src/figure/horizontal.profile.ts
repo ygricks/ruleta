@@ -3,7 +3,7 @@ import { CordMultiply } from './figure.cord';
 import { Profile, Shape } from './profile';
 
 // common horizontal shape
-const size: Shape = { w: 66, h: 60 };
+const size: Shape = { w: 54, h: 49 };
 const line12: Shape = { w: size.w * 2, h: size.h };
 const line3: Shape = { w: size.w * 3, h: size.h * 0.8 };
 const line4: Shape = { w: size.w * 4, h: size.h * 0.8 };
