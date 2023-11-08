@@ -54,10 +54,9 @@ export class BySVG {
             h: (screen.h - minSize.h) / 2
         };
         BySVG.writeAttributes(this.svg, {
-            style: `scale:${scale}`,
-            transform: `translate(${parseInt(translate.w + '')}, ${parseInt(
+            style: `transform: translate(${parseInt(translate.w + '')}px, ${parseInt(
                 translate.h + ''
-            )})`
+            )}px) scale(${scale})`,
         });
     }
 
