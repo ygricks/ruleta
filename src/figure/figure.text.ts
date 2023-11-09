@@ -3,8 +3,8 @@ import { Figure } from './figure';
 export type TextStyle = { text: string; size: number };
 type ProfileText = { [key in Figure]: TextStyle };
 
-const DSize = 24; // default font size
-const BSize = 18; // bid font size
+const DSize = 30; // default font size
+const BSize = 24; // bid font size
 
 export const FigureText: ProfileText = {
     [Figure._0]: { text: '0', size: DSize },

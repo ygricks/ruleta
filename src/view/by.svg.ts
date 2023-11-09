@@ -44,19 +44,16 @@ export class BySVG {
     private resize(event: Event) {
         const screen: Shape = { w: window.innerWidth, h: window.innerHeight };
         const minSize = this.getMinSize();
-        let scale = Math.min(
-            screen.w / minSize.w,
-            screen.h / minSize.h
-        );
+        let scale = Math.min(screen.w / minSize.w, screen.h / minSize.h);
         scale = parseFloat(scale.toFixed(4));
         const translate: Shape = {
             w: (screen.w - minSize.w) / 2,
             h: (screen.h - minSize.h) / 2
         };
         BySVG.writeAttributes(this.svg, {
-            style: `transform: translate(${parseInt(translate.w + '')}px, ${parseInt(
-                translate.h + ''
-            )}px) scale(${scale})`,
+            style: `transform: translate(${parseInt(
+                translate.w + ''
+            )}px, ${parseInt(translate.h + '')}px) scale(${scale})`
         });
     }
 
@@ -169,7 +166,7 @@ export class BySVG {
     }
 
     private getMinSize(): Shape {
-        let size = null
+        let size = null;
         let w: number = 0;
         let h: number = 0;
         for (const key in Figure) {
@@ -192,7 +189,7 @@ export class BySVG {
         const dataBid = `bid_${key}`;
         let g = this.svg.querySelector(`[data-bid=${dataBid}]`);
         if (!g) {
-            const radius = 18;
+            const radius = 15;
             const margin = 10;
             const profile = this.profile[figure];
             let { x, y, w, h } = profile;
@@ -278,6 +275,9 @@ export class BySVG {
                 'font-size': text.size
             });
         }
+        this.bidsGroup = document.createElementNS(this.ns, 'g');
+        this.svg.appendChild(this.bidsGroup);
+        BySVG.writeAttributes(this.bidsGroup, { 'data-bids': '---bids---' });
     }
 
     private triggerFullScreen() {
