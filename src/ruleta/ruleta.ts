@@ -151,6 +151,7 @@ export class Ruleta {
                     if (ball % 3 === 1) {
                         return 3;
                     }
+                    break;
                 case FigureOption.EVEN:
                     if (ball !== 0 && ball % 2 === 0) {
                         return 2;
