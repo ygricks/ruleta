@@ -38,6 +38,9 @@ export function GetColor(figure: Figure): Color {
         if (figure === Figure.ROLL) {
             return Color.ORANGE;
         }
+        if (figure === Figure.LOSE) {
+            return Color.BLACK;
+        }
         return Color.GREEN;
     }
     if (FigureBidAmount.hasOwnProperty(figureKey)) {

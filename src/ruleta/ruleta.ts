@@ -92,12 +92,12 @@ export class Ruleta {
         this.bids = {};
         this.winnerBids = [];
         if (this.cont.value === 0) {
-            await this.tryAgain();
+            this.runAction(Action.LOSE);
         }
     }
 
-    private async tryAgain() {
-        if (confirm('you lose\ndo you want to try again ?')) {
+    public async tryAgain() {
+        if (this.cont.value === 0) {
             this.cont.value = 100;
             this.runAction(Action.CONT_CHANGE, this.cont.value);
             this.runAction(Action.RESTART);

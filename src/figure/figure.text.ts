@@ -65,5 +65,6 @@ export const FigureText: ProfileText = {
     [Figure.B_HUNDRED]: { text: '100', size: BSize },
     [Figure.B_FIVE_HUNDRED]: { text: '500', size: BSize },
     [Figure.B_THOUSAND]: { text: '1000', size: BSize },
-    [Figure.FULL_SCREEN]: { text: '⤢', size: BSize }
+    [Figure.FULL_SCREEN]: { text: '⤢', size: BSize },
+    [Figure.LOSE]: { text: 'You Lose, Click to try again', size: DSize }
 };

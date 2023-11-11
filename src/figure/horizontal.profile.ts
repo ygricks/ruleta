@@ -63,10 +63,6 @@ export const HorizontalProfile: Profile = {
     [Figure.BLACK]: { ...CordMultiply(size, { x: 10, y: 4.6 }), ...line3 },
     [Figure.ROLL]: { ...CordMultiply(size, { x: 1, y: 7 }), ...line3 },
     [Figure.CONT]: { ...CordMultiply(size, { x: 4, y: 7 }), ...line3 },
-    [Figure.FULL_SCREEN]: {
-        ...CordMultiply(size, { x: 14.2, y: 7 }),
-        ...bidSize
-    },
     [Figure.B_HALF]: { ...CordMultiply(bidSize, { x: 9, y: 7.2 }), ...bidSize },
     [Figure.B_ONE]: { ...CordMultiply(bidSize, { x: 10, y: 7.2 }), ...bidSize },
     [Figure.B_FIVE]: {
@@ -88,5 +84,15 @@ export const HorizontalProfile: Profile = {
     [Figure.B_THOUSAND]: {
         ...CordMultiply(bidSize, { x: 15, y: 7.2 }),
         ...bidSize
+    },
+    [Figure.FULL_SCREEN]: {
+        ...CordMultiply(size, { x: 14.2, y: 7 }),
+        ...bidSize
+    },
+    [Figure.LOSE]: {
+        x: 0,
+        y: 0,
+        w: bidSize.w * 18.74,
+        h: bidSize.h * 9.73
     }
 };

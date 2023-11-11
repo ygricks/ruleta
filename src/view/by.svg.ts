@@ -26,6 +26,7 @@ export class BySVG {
     private bidsGroup: Element;
     private clear: boolean = false;
     private fullScreen: boolean = false;
+    private minSize: Shape = null;
 
     constructor(public readonly ruleta: Ruleta) {
         this.init();
@@ -34,6 +35,7 @@ export class BySVG {
 
     private listen() {
         this.ruleta.on(Action.START, this._start.bind(this));
+        this.ruleta.on(Action.LOSE, this._lose.bind(this));
         this.ruleta.on(Action.ROLL, this._roll.bind(this));
         this.ruleta.on(Action.RESTART, this._restart.bind(this));
         this.ruleta.on(Action.CONT_CHANGE, this._cont_changed.bind(this));
@@ -43,12 +45,14 @@ export class BySVG {
 
     private resize(event: Event) {
         const screen: Shape = { w: window.innerWidth, h: window.innerHeight };
-        const minSize = this.getMinSize();
-        let scale = Math.min(screen.w / minSize.w, screen.h / minSize.h);
+        let scale = Math.min(
+            screen.w / this.minSize.w,
+            screen.h / this.minSize.h
+        );
         scale = parseFloat(scale.toFixed(4));
         const translate: Shape = {
-            w: (screen.w - minSize.w) / 2,
-            h: (screen.h - minSize.h) / 2
+            w: (screen.w - this.minSize.w) / 2,
+            h: (screen.h - this.minSize.h) / 2
         };
         BySVG.writeAttributes(this.svg, {
             style: `transform: translate(${parseInt(
@@ -62,6 +66,11 @@ export class BySVG {
         this.resize(new Event('nope'));
     }
 
+    private _lose() {
+        const loseGroup = this.getLoseGroup();
+        loseGroup.classList.add('lose');
+    }
+
     private _roll(_figure: any) {
         const figure = _figure as Figure;
         const key = FigureKeys[figure];
@@ -71,6 +80,8 @@ export class BySVG {
     }
 
     private _restart() {
+        const loseGroup = this.getLoseGroup();
+        loseGroup.classList.remove('lose');
         this._clear();
     }
 
@@ -118,6 +129,8 @@ export class BySVG {
             this.ruleta.roll();
         } else if (figure === Figure.FULL_SCREEN) {
             this.triggerFullScreen();
+        } else if (figure === Figure.LOSE) {
+            this.ruleta.tryAgain();
         }
     }
 
@@ -166,22 +179,22 @@ export class BySVG {
     }
 
     private getMinSize(): Shape {
-        let size = null;
-        let w: number = 0;
-        let h: number = 0;
-        for (const key in Figure) {
-            const figure = GetFigureByKey(key);
-            const p = this.profile[figure];
-            const fw = p.x + p.w;
-            const fh = p.y + p.h;
-            if (fw > w) {
-                w = fw;
-            }
-            if (fh > h) {
-                h = fh;
+        if (!this.minSize) {
+            this.minSize = { w: 0, h: 0 };
+            for (const key in Figure) {
+                const figure = GetFigureByKey(key);
+                const p = this.profile[figure];
+                const fw = p.x + p.w;
+                const fh = p.y + p.h;
+                if (fw > this.minSize.w) {
+                    this.minSize.w = fw;
+                }
+                if (fh > this.minSize.h) {
+                    this.minSize.h = fh;
+                }
             }
         }
-        return { w, h };
+        return this.minSize;
     }
 
     getDomdBid(figure: Figure, amount: number): Element {
@@ -276,8 +289,15 @@ export class BySVG {
             });
         }
         this.bidsGroup = document.createElementNS(this.ns, 'g');
-        this.svg.appendChild(this.bidsGroup);
         BySVG.writeAttributes(this.bidsGroup, { 'data-bids': '---bids---' });
+        const loseGroup = this.getLoseGroup();
+        this.svg.insertBefore(this.bidsGroup, loseGroup);
+    }
+
+    private getLoseGroup(): Element {
+        return this.svg.querySelector(
+            `g[data-figure="${FigureKeys[Figure.LOSE]}"]`
+        );
     }
 
     private triggerFullScreen() {

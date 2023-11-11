@@ -23,6 +23,7 @@ export class ByCanvas {
     private profile: Profile;
     private nextClickClear: boolean = false;
     private bidAmount: FigureBidAmount = FigureBidAmount.B_ONE;
+    private lose: boolean = false;
 
     constructor(public readonly ruleta: Ruleta) {
         this.profile = HorizontalProfile;
@@ -35,6 +36,7 @@ export class ByCanvas {
         this.ruleta.on(Action.START, this._start.bind(this));
         this.ruleta.on(Action.ROLL, this._roll.bind(this));
         this.ruleta.on(Action.RESTART, this._restart.bind(this));
+        this.ruleta.on(Action.LOSE, this._lose.bind(this));
     }
 
     private _start() {
@@ -50,8 +52,18 @@ export class ByCanvas {
     }
 
     private _restart(_figure: any) {
+        this.lose = false;
         this.drawUI();
         this.vp.view();
+    }
+
+    private _lose() {
+        this.lose = true;
+        const { out } = this.vp;
+        const figure = Figure.LOSE;
+        const p = this.profile[figure];
+        drawRectOn(out, p, GetColor(figure));
+        drawTextOn(out, p, FigureText[figure]);
     }
 
     private getMinSize(): Shape {
@@ -81,6 +93,9 @@ export class ByCanvas {
         const { board } = this.vp;
         for (const key in Figure) {
             const figure = GetFigureByKey(key);
+            if (figure === Figure.LOSE || figure === Figure.FULL_SCREEN) {
+                continue;
+            }
             const p = this.profile[figure];
             drawRectOn(board, p, GetColor(figure));
             drawTextOn(board, p, FigureText[figure]);
@@ -88,6 +103,10 @@ export class ByCanvas {
     }
 
     private click(event: PointerEvent) {
+        if (this.lose) {
+            this.ruleta.tryAgain();
+            return;
+        }
         const { clientX: x, clientY: y } = event;
         const figure: Figure | null = this.getClickedFigure(x, y);
         if (this.nextClickClear) {

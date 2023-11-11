@@ -2,5 +2,6 @@
 export enum FigureSpecial {
     ROLL = 'roll',
     CONT = 'cont',
-    FULL_SCREEN = 'full_screen'
+    FULL_SCREEN = 'full_screen',
+    LOSE = 'lose'
 }

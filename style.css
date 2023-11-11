@@ -54,3 +54,15 @@ svg text{
 svg g {
   transform-origin: center;
 }
+
+svg g[data-figure="LOSE"] rect{
+  opacity: 0.9;
+}
+
+svg g[data-figure="LOSE"] {
+  display: none;
+}
+
+svg g.lose {
+  display: block;
+}

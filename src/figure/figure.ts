@@ -7,13 +7,13 @@ import { FigureBidAmount } from './figure.bid.amount';
 export const Figure = {
     ...FigureCell,
     ...FigureOption,
-    ...FigureSpecial,
-    ...FigureBidAmount
+    ...FigureBidAmount,
+    ...FigureSpecial
 };
 
 // common Figure type
 export type Figure =
     | FigureCell
     | FigureOption
-    | FigureSpecial
-    | FigureBidAmount;
+    | FigureBidAmount
+    | FigureSpecial;
